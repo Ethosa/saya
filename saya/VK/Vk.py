@@ -43,3 +43,21 @@ class Vk:
                 "https://api.vk.com/method/%s" % method, data=data
             ).json()
         return response
+
+    def __getattr__(self, attr):
+        """a convenient alternative for the call_method method
+
+        Arguments:
+            attr {str} -- method name
+            e.g. messages.send, wall.post
+
+        Returns:
+            response after calling method
+        """
+        if self.method:
+            method = "%s.%s" % (self.method, attr)
+            self.method = ""
+            return lambda **data: self.call_method(method, data)
+        else:
+            self.method = attr
+            return self
