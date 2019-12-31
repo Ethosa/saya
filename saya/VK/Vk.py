@@ -3,6 +3,9 @@
 
 import requests
 
+from .LongPoll import LongPoll
+from .VkAuthManager import VkAuthManager
+
 
 class Vk:
     def __init__(self, token="", group_id="",
@@ -19,10 +22,15 @@ class Vk:
             api {str} -- api version (default: {"5.103"})
         """
         self.session = requests.Session()
+        if login and password:
+            auth = VkAuthManager(self, login, password)
+            auth.login()
+            token = auth.get_token()
         self.token = token
         self.group_id = group_id
         self.v = api
         self.method = ""
+        self.longpoll = LongPoll(self)
 
     def call_method(self, method, data={}):
         """call to any method in VK api
