@@ -1,0 +1,45 @@
+# -*- coding: utf-8 -*-
+# author: Ethosa
+
+import requests
+
+
+class Vk:
+    def __init__(self, token="", group_id="",
+                 login="", password="", api="5.103"):
+        """auth in VK
+
+        use it for auth in VK
+
+        Keyword Arguments:
+            token {str} -- access_token (default: {""})
+            group_id {str} -- group id if you want to log in through the group (default: {""})
+            login {str} -- login. used for authorization through the user (default: {""})
+            password {str} -- password. used for authorization through the user (default: {""})
+            api {str} -- api version (default: {"5.103"})
+        """
+        self.session = requests.Session()
+        self.token = token
+        self.group_id = group_id
+        self.v = api
+        self.method = ""
+
+    def call_method(self, method, data={}):
+        """call to any method in VK api
+
+        Arguments:
+            method {str} -- method name
+            e.g. "messages.send", "wall.post"
+
+        Keyword Arguments:
+            data {dict} -- data to send (default: {{}})
+
+        Returns:
+            {dict} -- response after calling method
+        """
+        data["access_token"] = self.token
+        data["v"] = self.v
+        response = self.session.post(
+                "https://api.vk.com/method/%s" % method, data=data
+            ).json()
+        return response
