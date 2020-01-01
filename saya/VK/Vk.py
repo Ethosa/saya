@@ -32,6 +32,7 @@ class Vk:
         self.group_id = group_id
         self.v = api
         self.method = ""
+        self.execute = lambda **kwargs: self.call_method("execute", kwargs)
         self.longpoll = LongPoll(self)
 
     def call_method(self, method, data={}):
