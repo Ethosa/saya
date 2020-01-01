@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="saya",
-    version="0.0.2",
+    version="0.0.3",
     author="Ethosa",
     author_email="social.ethosa@gmail.com",
     description="The framework for vk",
@@ -33,6 +33,7 @@ setuptools.setup(
     install_requires=[
         "requests",
         "regex",
-        "beautifulsoup4"
+        "beautifulsoup4",
+        "retranslator"
     ]
 )
