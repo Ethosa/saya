@@ -28,4 +28,4 @@ __Q__: Where can I learn this?
 __A__: You can explore the library on the [wiki page](https://github.com/Ethosa/saya/wiki)
 
 __Q__: How can I help develop the library?  
-__A__: You can put an asterisk to this repository! (´• ω •`) :star:
+__A__: You can put a star on this repository! (´• ω •`) :star:
