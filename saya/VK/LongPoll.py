@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
 
+from .Event import Event
+
 
 class LongPoll:
     def __init__(self, vk):
@@ -21,7 +23,7 @@ class LongPoll:
             self.method = "https://api.vk.com/method/messages.getLongPollServer"
             self.for_server = "https://%s?act=a_check&key=%s&ts=%s&wait=25&mode=202&version=3"
 
-    def listen(self):
+    def listen(self, event=False):
         """Start listening
 
         Yields:
@@ -45,4 +47,7 @@ class LongPoll:
 
             for update in updates:
                 if update:
-                    yield update
+                    if event:
+                        yield Event(update)
+                    else:
+                        yield update
