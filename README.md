@@ -9,10 +9,10 @@ Python framework for VK
 ![logo](https://github.com/Ethosa/saya/blob/master/logo1.png)
 
 ## Getting started
-__Installation__:  
+*Installation*:  
 `pip install saya --upgade` or `pip install git+git://github.com/Ethosa/saya.git`
 
-**Import**:
+*Import*:
 ```python
 from saya import Vk
 ```
@@ -24,8 +24,8 @@ from saya import Vk
 -   translator Python code in the code on the VK Script (Beta).
 
 ## FAQ
-**Q**: Where can I learn this?  
-**A**: You can explore the library on the [wiki page](https://github.com/Ethosa/saya/wiki)
+*Q*: Where can I learn this?  
+*A*: You can explore the library on the [wiki page](https://github.com/Ethosa/saya/wiki)
 
-**Q**: How can I help develop the library?  
-**A**: You can put a star on this repository! (´• ω •`) :star:
+*Q*: How can I help develop the library?  
+*A*: You can put a star on this repository! (´• ω •`) :star:
