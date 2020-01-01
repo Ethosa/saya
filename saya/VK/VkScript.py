@@ -23,6 +23,24 @@ class VkScript(Translator):
          (r"\1//\2"),
          None, 0),
 
+        # API.messages.send(message="hello saya", peer_id=123123, ...)
+        # API.messages.send("message": "hello saya", "peer_id": 123123, ...)
+        ((r"\(([\S\s]*?)(\b[a-zA-Z0-9_]+\b)[ ]*=[ ]*([^,]+)([\S\s]*)\)"),
+         (r'(\1"\2": \3\4)'),
+         None, 70),
+
+        # API.messages.send("message": "hello saya", "peer_id": 123123, ...)
+        # API.messages.send({"message": "hello saya", "peer_id": 123123, ...})
+        ((r"\(([^{}][ \S]+):([ \S]+[^{}])\)"),
+         (r"({\1:\2})"),
+         None, 0),
+
+        # API.call(...)["response"]
+        # API.call(...)@.response
+        ((r"([^\(]+\([^\)]*\))[ ]*\[[ ]*\"([\S ]+)\"[ ]*\]"),
+         (r"\1@.\2"),
+         None, 0),
+
         # if ...:
         #     ...
         # ---------
