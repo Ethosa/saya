@@ -3,6 +3,8 @@
 
 import requests
 
+from ..StartThread import StartThread
+
 from .LongPoll import LongPoll
 from .VkAuthManager import VkAuthManager
 
@@ -62,7 +64,18 @@ class Vk:
         Returns:
             response after calling method
         """
-        if self.method:
+        if attr.startswith("on_"):
+            attr = attr[3:]
+
+            def decorator(func):
+                def listen():
+                    for event in self.longpoll.listen(True):
+                        if event["type"] == attr:
+                            func(event)
+                StartThread(listen).start()
+
+            return decorator
+        elif self.method:
             method = "%s.%s" % (self.method, attr)
             self.method = ""
             return lambda **data: self.call_method(method, data)
