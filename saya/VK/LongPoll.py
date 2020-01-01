@@ -60,5 +60,5 @@ class LongPoll:
                 yield self.events.pop()
 
     def push(self, event):
-        for i in range(self.opened):
+        for _ in range(self.opened):
             self.events.append(event)
