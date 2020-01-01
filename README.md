@@ -1,6 +1,6 @@
 <h1 align="center">Saya</h1>
 
-***Python framework for VK***
+Python framework for VK
 
 [![CodeFactor](https://www.codefactor.io/repository/github/ethosa/saya/badge)](https://www.codefactor.io/repository/github/ethosa/saya)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d99e1d9e2eb340aabeea968926dbb0f0)](https://www.codacy.com/manual/Ethosa/saya?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Ethosa/saya&amp;utm_campaign=Badge_Grade)
@@ -12,7 +12,7 @@
 __Installation__:  
 `pip install saya --upgade` or `pip install git+git://github.com/Ethosa/saya.git`
 
-__Import__:
+**Import**:
 ```python
 from saya import Vk
 ```
@@ -24,8 +24,8 @@ from saya import Vk
 -   translator Python code in the code on the VK Script (Beta).
 
 ## FAQ
-__Q__: Where can I learn this?  
-__A__: You can explore the library on the [wiki page](https://github.com/Ethosa/saya/wiki)
+**Q**: Where can I learn this?  
+**A**: You can explore the library on the [wiki page](https://github.com/Ethosa/saya/wiki)
 
-__Q__: How can I help develop the library?  
-__A__: You can put a star on this repository! (´• ω •`) :star:
+**Q**: How can I help develop the library?  
+**A**: You can put a star on this repository! (´• ω •`) :star:
