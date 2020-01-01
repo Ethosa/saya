@@ -16,6 +16,9 @@ class LongPoll:
         self.group_id = vk.group_id
         self.v = vk.v
 
+        self.events = []
+        self.opened = 0
+
         if self.group_id:
             self.method = "https://api.vk.com/method/groups.getLongPollServer"
             self.for_server = "%s?act=a_check&key=%s&ts=%s&wait=25"
@@ -29,6 +32,7 @@ class LongPoll:
         Yields:
             {dict} -- new event
         """
+        self.opened += 1
         data = {
             "access_token": self.token,
             "group_id": self.group_id,
@@ -51,3 +55,10 @@ class LongPoll:
                         yield Event(update)
                     else:
                         yield update
+
+            if self.events:
+                yield self.events.pop()
+
+    def push(self, event):
+        for i in range(self.opened):
+            self.events.append(event)
