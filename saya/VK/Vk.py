@@ -7,6 +7,7 @@ from ..StartThread import StartThread
 
 from .LongPoll import LongPoll
 from .VkAuthManager import VkAuthManager
+from .Uploader import Uploader
 
 
 class Vk:
@@ -34,6 +35,7 @@ class Vk:
         self.method = ""
         self.execute = lambda **kwargs: self.call_method("execute", kwargs)
         self.longpoll = LongPoll(self)
+        self.uploader = Uploader(self)
 
     def call_method(self, method, data={}):
         """call to any method in VK api
