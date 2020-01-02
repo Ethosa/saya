@@ -10,8 +10,10 @@ from .VkScript import VkScript
 from .Uploader import Uploader
 from .Button import Button
 from .Keyboard import Keyboard
+from .TemplateElement import TemplateElement
+from .Template import Template
 
 if __name__ == '__main__':
     print(Vk, LongPoll, VkAuthManager, Event,
           PushEvent, VkScript, Uploader, Button,
-          Keyboard)
+          Keyboard, TemplateElement, Template)
