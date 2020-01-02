@@ -15,8 +15,6 @@ class Vk(object):
                  login="", password="", api="5.103"):
         """auth in VK
 
-        use it for auth in VK
-
         Keyword Arguments:
             token {str} -- access_token (default: {""})
             group_id {str} -- group id if you want to log in through the group (default: {""})
@@ -78,13 +76,13 @@ class Vk(object):
             attr = attr[3:]
 
             def decorator(func):
-                obj_type = type(func)
+                obj_type = "%s" % type(func)
 
                 def listen(f):
                     for event in self.longpoll.listen(True):
                         if event["type"] == attr:
                             func(event)
-                if "method" in obj_type or "function" in obj_type or "class" in obj_type:
+                if "method" in obj_type or "function" in obj_type:
                     StartThread(listen, func).start()
                 else:
                     if func:
