@@ -21,6 +21,7 @@ from saya import Vk
 -   calling any method from VK Api.
 -   convenient interaction with Longpoll.
 -   writing your own events for Longpoll and processing them.
+-   convenient work with keyboards.
 -   translator Python code in the code on the VK Script (Beta).
 
 ## FAQ
