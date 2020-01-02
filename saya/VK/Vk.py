@@ -10,7 +10,7 @@ from .VkAuthManager import VkAuthManager
 from .Uploader import Uploader
 
 
-class Vk:
+class Vk(object):
     def __init__(self, token="", group_id="",
                  login="", password="", api="5.103"):
         """auth in VK
@@ -33,7 +33,8 @@ class Vk:
         self.group_id = group_id
         self.v = api
         self.method = ""
-        self.execute = lambda **kwargs: self.call_method("execute", kwargs)
+        self.events = {}
+        self.execute = lambda code: self.call_method("execute", {"code": code})
         self.longpoll = LongPoll(self)
         self.uploader = Uploader(self)
 
@@ -57,6 +58,12 @@ class Vk:
             ).json()
         return response
 
+    def start_listen(self):
+        for event in self.longpoll.listen(True):
+            if "type" in event:
+                if "event_%s" % event["type"] in self.events:
+                    self.events["event_%s" % event["type"]](event)
+
     def __getattr__(self, attr):
         """a convenient alternative for the call_method method
 
@@ -71,13 +78,28 @@ class Vk:
             attr = attr[3:]
 
             def decorator(func):
-                def listen():
+                obj_type = type(func)
+
+                def listen(f):
                     for event in self.longpoll.listen(True):
                         if event["type"] == attr:
                             func(event)
-                StartThread(listen).start()
+                if "method" in obj_type or "function" in obj_type or "class" in obj_type:
+                    StartThread(listen, func).start()
+                else:
+                    if func:
+                        def _decorator(call):
+                            StartThread(listen, call).start()
+                        return _decorator
+                    else:
+                        def _decorator(call):
+                            self.events["event_%s" % attr] = call
+                            return call
+                        return _decorator
 
             return decorator
+        elif attr.startswith("event_"):
+            super().__getattr__(attr)
         elif self.method:
             method = "%s.%s" % (self.method, attr)
             self.method = ""
