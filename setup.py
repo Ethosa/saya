@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="saya",
-    version="0.0.8",
+    version="0.0.9",
     author="Ethosa",
     author_email="social.ethosa@gmail.com",
     description="The framework for vk",
