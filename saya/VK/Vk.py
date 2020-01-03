@@ -27,11 +27,13 @@ class Vk(object):
             auth = VkAuthManager(self, login, password)
             auth.login()
             token = auth.get_token()
+
         self.token = token
         self.group_id = group_id
         self.v = api
         self.method = ""
         self.events = {}
+
         self.execute = lambda code: self.call_method("execute", {"code": code})
         self.longpoll = LongPoll(self)
         self.uploader = Uploader(self)
@@ -61,6 +63,8 @@ class Vk(object):
             if "type" in event:
                 if "event_%s" % event["type"] in self.events:
                     self.events["event_%s" % event["type"]](event)
+                elif event["type"] in dir(self):
+                    self.__getattribute__(event["type"])(event)
 
     def __getattr__(self, attr):
         """a convenient alternative for the call_method method
@@ -96,8 +100,6 @@ class Vk(object):
                         return _decorator
 
             return decorator
-        elif attr.startswith("event_"):
-            super().__getattr__(attr)
         elif self.method:
             method = "%s.%s" % (self.method, attr)
             self.method = ""
