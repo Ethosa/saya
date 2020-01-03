@@ -77,9 +77,10 @@ class VkScript(Translator):
         #   ...
         # ------------------
         # i = 0
-        # while i < 10:
+        # while (i < 10){
         #   ...
-        # i += 1
+        #   i += 1
+        # }
         ((r"(?P<enter>[\r\n]+)(?P<indent>[ ]*)for[ ]*"
           r"(?P<var>[a-zA-Z0-9_]+)[ ]*in[ ]*range[ ]*\((?P<end>[^,\)]+)\):"
           r"(?P<body>[\r\n]+(?P<block_indent>(?P=indent)[ ]*)"
@@ -90,13 +91,14 @@ class VkScript(Translator):
           r"\g<indent>}\n"),
          None, 70),
 
-        # for i in range(0, 10):
+        # for i in range(1, 10):
         #   ...
         # ------------------
-        # i = 0
-        # while i < 10:
+        # i = 1
+        # while (i < 10){
         #   ...
-        # i += 1
+        #   i += 1
+        # }
         ((r"(?P<enter>[\r\n]+)(?P<indent>[ ]*)for[ ]*"
           r"(?P<var>[a-zA-Z0-9_]+)[ ]*in[ ]*range[ ]*\((?P<start>[^,]+),[ ]*(?P<end>[^,\)]+)\):"
           r"(?P<body>[\r\n]+(?P<block_indent>(?P=indent)[ ]*)"
@@ -111,9 +113,10 @@ class VkScript(Translator):
         #   ...
         # ------------------
         # i = 0
-        # while i < 10:
+        # while (i < 10){
         #   ...
-        # i += 2
+        #   i += 2
+        # }
         ((r"(?P<enter>[\r\n]+)(?P<indent>[ ]*)for[ ]*"
           r"(?P<var>[a-zA-Z0-9_]+)[ ]*in[ ]*range[ ]*\((?P<start>[^,]+),[ ]*"
           r"(?P<end>[^,]+),[ ]*(?P<step>[^,\)]+)\):"
@@ -122,6 +125,46 @@ class VkScript(Translator):
          (r"\g<enter>\g<indent>var \g<var> = \g<start>;\n"
           r"\g<indent>while (\g<var> < \g<end>){"
           r"\g<body>\g<block_indent>\g<var> += \g<step>;\n"
+          r"\g<indent>}\n"),
+         None, 70),
+
+        # for index, obj in enumerate(array):
+        #   ...
+        # ------------------
+        # index = 0
+        # while (index < array.length){
+        #   obj = iterable_object[_i_index]
+        #   ...
+        #   index += 1
+        # }
+        ((r"(?P<enter>[\r\n]+)(?P<indent>[ ]*)for[ ]*"
+          r"(?P<index>[a-zA-Z0-9_]+)[ ]*,[ ]*(?P<obj>[a-zA-Z0-9_]+)[ ]*in[ ]*enumerate\((?P<array>[\S ]+)\):"
+          r"(?P<body>[\r\n]+(?P<block_indent>(?P=indent)[ ]*)"
+          r"[^\r\n]+[\r\n]+((?P=block_indent)[^\r\n]+[\r\n]+)*)"),
+         (r"\g<enter>\g<indent>var \g<index> = 0;\n"
+          r"\g<indent>while (\g<index> < \g<array>.length){"
+          r"\n\g<block_indent>var \g<obj> = \g<array>[\g<index>]"
+          r"\g<body>\g<block_indent>\g<index> += 1;\n"
+          r"\g<indent>}\n"),
+         None, 70),
+
+        # for i in iterable_object:
+        #   ...
+        # ------------------
+        # _i_index = 0
+        # while (_i < iterable_object.length){
+        #   i = iterable_object[_i_index]
+        #   ...
+        #   _i_index += 1
+        # }
+        ((r"(?P<enter>[\r\n]+)(?P<indent>[ ]*)for[ ]*"
+          r"(?P<var>[a-zA-Z0-9_]+)[ ]*in[ ]*(?P<array>[\S ]+):"
+          r"(?P<body>[\r\n]+(?P<block_indent>(?P=indent)[ ]*)"
+          r"[^\r\n]+[\r\n]+((?P=block_indent)[^\r\n]+[\r\n]+)*)"),
+         (r"\g<enter>\g<indent>var _\g<var>_index = 0;\n"
+          r"\g<indent>while (_\g<var>_index < \g<array>.length){"
+          r"\n\g<block_indent>var \g<var> = \g<array>[_\g<var>_index]"
+          r"\g<body>\g<block_indent>_\g<var>_index += 1;\n"
           r"\g<indent>}\n"),
          None, 70),
 
