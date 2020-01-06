@@ -8,6 +8,7 @@ from ..StartThread import StartThread
 from .LongPoll import LongPoll
 from .VkAuthManager import VkAuthManager
 from .Uploader import Uploader
+from .VkScript import VkScript
 
 
 class Vk(object):
@@ -23,10 +24,12 @@ class Vk(object):
             api {str} -- api version (default: {"5.103"})
         """
         self.session = requests.Session()
+        self.is_lp = False
         if login and password:
-            auth = VkAuthManager(self, login, password)
-            auth.login()
-            token = auth.get_token()
+            self.auth = VkAuthManager(self, login, password)
+            self.auth.login()
+            token = self.auth.get_token()
+            self.is_lp = True
 
         self.token = token
         self.group_id = group_id
@@ -35,6 +38,7 @@ class Vk(object):
         self.events = {}
 
         self.execute = lambda code: self.call_method("execute", {"code": code})
+        self.pyexecute = lambda code: self.call_method("execute", {"code": VkScript().translate(code)})
         self.longpoll = LongPoll(self)
         self.uploader = Uploader(self)
 
