@@ -18,6 +18,7 @@ class LongPoll:
 
         self.events = []
         self.opened = 0
+        self.lend = lambda arg: None
 
         if self.group_id:
             self.method = "https://api.vk.com/method/groups.getLongPollServer"
@@ -46,6 +47,8 @@ class LongPoll:
 
         while 1:
             response = self.session.get(self.for_server % (server, key, ts)).json()
+            if "ts" not in response:
+                break
             ts = response["ts"]
             updates = response["updates"]
 
@@ -58,7 +61,25 @@ class LongPoll:
 
             if self.events:
                 yield self.events.pop()
+        self.lend(event)
+
+    def on_listen_end(self, call):
+        """Sets the function that is called when listening is completed.
+
+        Arguments:
+            call {method, function or class} -- callable object
+
+        Returns:
+            call
+        """
+        self.lend = call
+        return call
 
     def push(self, event):
+        """Adds a new event to Longpoll
+
+        Arguments:
+            event {dict} -- event info. Must contain a "type" key for normal operation
+        """
         for _ in range(self.opened):
             self.events.append(event)
