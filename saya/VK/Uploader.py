@@ -179,7 +179,7 @@ class Uploader:
             "type": doc_type
         }
 
-        response = self.upload_files(data, files, "docs.docs.getMessagesUploadServer")
+        response = self.upload_files(data, files, "docs.getMessagesUploadServer")
         data = {
             "file": response["file"],
             "title": title,
@@ -201,6 +201,8 @@ class Uploader:
         """
         if "response" in response:
             response = response["response"]
+        if "type" in response:
+            response = response[response["type"]]
         if isinstance(response, dict):
             if "owner_id" in response and "id" in response:
                 return "%s%s_%s" % (type_obj, response["owner_id"], response["id"])
@@ -392,10 +394,14 @@ class Uploader:
         if isinstance(files, str):
             files = [files]
 
-        for index, file in enumerate(files):
-            upload_files["file%d" % (index+1)] = open(file, "rb")
+        if len(files) > 1:
+            for index, file in enumerate(files):
+                upload_files["file%d" % (index+1)] = open(file, "rb")
+        else:
+            upload_files["file"] = open(files[0], "rb")
 
         response = self.session.post(upload_url, files=upload_files).json()
+        print(response)
         return response
 
     def wall_photo(self, files, group_id=None,
