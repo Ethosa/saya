@@ -211,7 +211,7 @@ class Uploader:
             for photo in response:
                 if "owner_id" in photo and "id" in photo:
                     photos.append("%s%s_%s" % (type_obj, photo["owner_id"], photo["id"]))
-            return ",".joint(photos)
+            return ",".join(photos)
 
     def message_photo(self, files, peer_id):
         """upload photo in message
@@ -401,7 +401,6 @@ class Uploader:
             upload_files["file"] = open(files[0], "rb")
 
         response = self.session.post(upload_url, files=upload_files).json()
-        print(response)
         return response
 
     def wall_photo(self, files, group_id=None,
