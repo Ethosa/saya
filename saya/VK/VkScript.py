@@ -170,8 +170,8 @@ class VkScript(Translator):
 
         # pass
         #
-        ((r"pass"),
-         (r""),
+        ((r"([\r\n]+[ ]*)([^\"]+)\bpass\b"),
+         (r"\1\2"),
          None, 0),
 
         # elif
@@ -186,7 +186,7 @@ class VkScript(Translator):
         # var a = 0
         # a += 1
         ((r"(?P<enter>[\r\n]+[ ]*)(?P<var_name>[a-zA-Z0-9_]+)(?P<assign>[ ]*=[ ]*[^\r\n]+)"
-          r"(?P<other>[\s\S]+(?P=var_name)[ ]*)"),
+          r"(?P<other>[\s\S]+(?P=var_name)[ ]*)*"),
          (r"\g<enter>var \g<var_name>\g<assign>\g<other>"),
          None, 50),
 
@@ -228,13 +228,13 @@ class VkScript(Translator):
 
         # int("1")
         # parseInt("1")
-        ((r"(?P<enter>[\r\n]+[^\"]*)int[ ]*\((?P<val>[^\)]+)\)"),
+        ((r"(?P<enter>[\r\n]+[^\"]*)int[ ]*\([ ]*(?P<val>[^\)]+)\)"),
          (r"\g<enter>parseInt(\g<val>)"),
          None, 0),
 
         # float("1")
         # parseDouble("1")
-        ((r"(?P<enter>[\r\n]+[^\"]*)float[ ]*\((?P<val>[^\)]+)\)"),
+        ((r"(?P<enter>[\r\n]+[^\"]*)float[ ]*\([ ]*(?P<val>[^\)]+)\)"),
          (r"\g<enter>parseDouble(\g<val>)"),
          None, 0),
 
@@ -280,10 +280,16 @@ class VkScript(Translator):
          (r"\g<enter>\g<var>.unshift(\g<val>)"),
          None, 0),
 
-        # delete variable
         # del variable
-        ((r"([\r\n]+[^\"]*)delete[ ]*([^\r\n]+)"),
-         (r"\1del \2"),
+        # delete variable
+        ((r"([\r\n]+[^\"]*)del[ ]*([^\r\n]+)"),
+         (r"\1delete \2"),
+         None, 0),
+
+        # 1 if 1 == 2 else 2
+        # 1 == 2? 1 : 2
+        ((r"([\S ]*(=|return)[ ]*)(?P<value_if>[\S ]+)[ ]*if[ ]*(?P<condition>[\S ]+)[ ]*else[ ]*(?P<value_else>[^\r\n]+)"),
+         (r"\1\g<condition>? \g<value_if>: \g<value_else>"),
          None, 0),
 
         #
