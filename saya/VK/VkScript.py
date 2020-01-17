@@ -168,10 +168,43 @@ class VkScript(Translator):
           r"\g<indent>}\n"),
          None, 70),
 
+        # def smth():
+        #    ...
+        #    return 123
+        # ----------
+        # def smth():
+        #    ...
+        #    123
+        ((r"(?P<enter>[\r\n]+)(?P<indent>[ ]*)def[ ]*(?P<defname>[a-zA-Z0-9_]+)(?P<definfo>[^\r\n]+):"
+          r"(?P<body>[\r\n]+(?P<block_indent>(?P=indent)[ ]+)[^\r\n]+([\r\n]+(?P=block_indent)[^\r\n]+)*)"
+          r"[\r\n]+(?P=block_indent)return[ ]*(?P<return>[^\r\n]+)"),
+         (r"\g<enter>\g<indent>def \g<defname>\g<definfo>:"
+          r"\n\g<body>\n\g<block_indent>\g<return>"),
+         None, 70),
+
+        # def smth():
+        #    ...
+        #    return 123
+        # smth()
+        # ----------
+        # ...
+        ((r"(?P<enter>[\r\n]+)(?P<indent>[ ]*)def[ ]*(?P<defname>[a-zA-Z0-9_]+)[ ]*\([ ]*\)[ ]*:"
+          r"(?P<body>[\r\n]+(?P<block_indent>(?P=indent)[ ]+)[^\r\n]+([\r\n]+(?P=block_indent)[^\r\n]+)*)"
+          r"[\r\n]+(?P=block_indent)(?P<return>[^\r\n]+)"
+          r"(?P<other>[\S\s]+)(?P<line>[\r\n]+[\S ]*)(?P=defname)[ ]*\([ ]*\)[ ]*"),
+         (r"\g<enter>\g<indent>def \g<defname>():"
+          r"\n\g<body>\n\g<block_indent>\g<return>"
+          r"\g<other>\g<body>\g<line>\g<return>"),
+         None, 70),
+
         # pass
         #
         ((r"([\r\n]+[ ]*)([^\"]+)\bpass\b"),
          (r"\1\2"),
+         None, 0),
+
+        ((r"\n\n"),
+         (r"\n"),
          None, 0),
 
         # elif
@@ -288,7 +321,8 @@ class VkScript(Translator):
 
         # 1 if 1 == 2 else 2
         # 1 == 2? 1 : 2
-        ((r"([\S ]*(=|return)[ ]*)(?P<value_if>[\S ]+)[ ]*if[ ]*(?P<condition>[\S ]+)[ ]*else[ ]*(?P<value_else>[^\r\n]+)"),
+        ((r"([\S ]*(=|return)[ ]*)(?P<value_if>[\S ]+)[ ]*if[ ]*"
+          r"(?P<condition>[\S ]+)[ ]*else[ ]*(?P<value_else>[^\r\n]+)"),
          (r"\1\g<condition>? \g<value_if>: \g<value_else>"),
          None, 0),
 

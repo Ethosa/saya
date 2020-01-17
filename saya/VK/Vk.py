@@ -63,6 +63,10 @@ class Vk(object):
         return response
 
     def start_listen(self):
+        """starts receiving events from the server
+        """
+        if not self.longpoll.lend:
+            self.longpoll.lend = lambda event: self.start_listen
         for event in self.longpoll.listen(True):
             if "type" in event:
                 if "event_%s" % event["type"] in self.events:
