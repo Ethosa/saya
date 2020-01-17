@@ -69,3 +69,9 @@ class VkAuthManager:
             token = token[0]
 
         return token
+
+    def get_uid(self):
+        return regex.findall(r"\"[ ]*uid[ ]*\"[ ]*:[ ]*\"([^\"]+)\"", self.auth_page)
+
+    def get_domen(self):
+        return regex.findall(r"onLoginDone\('([^']+)", self.auth_page)
