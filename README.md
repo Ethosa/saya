@@ -10,7 +10,7 @@ Python framework for VK
 
 ## Getting started
 *Installation*:  
-`pip install saya --upgade` or `pip install git+git://github.com/Ethosa/saya.git`
+`pip install saya --upgrade` or `pip install git+git://github.com/Ethosa/saya.git`
 
 *Import*:
 ```python
