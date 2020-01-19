@@ -46,9 +46,12 @@ class LongPoll:
 
         server, ts, key = response["server"], response["ts"], response["key"]
 
+        if self.debug:
+            print("[DEBUG]: LongPoll launched")
+
         while 1:
             response = self.session.get(self.for_server % (server, key, ts)).json()
-            if "ts" not in response and "updates" not in response:
+            if "ts" not in response or "updates" not in response:
                 break
             ts = response["ts"]
             updates = response["updates"]
