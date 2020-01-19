@@ -69,7 +69,7 @@ class Vk(object):
             if "error" in response:
                 print('[DEBUG]: Error in called method "%s": %s' % (method, response))
             else:
-                print('[DEBUG]: Successfully called method "%s": %s' % (method, response))
+                print('[DEBUG]: Successfully called method "%s"' % (method))
         return response
 
     def start_listen(self):
