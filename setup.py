@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="saya",
-    version="0.1.3",
+    version="0.1.4",
     author="Ethosa",
     author_email="social.ethosa@gmail.com",
     description="The framework for vk",
@@ -16,7 +16,7 @@ setuptools.setup(
     license="LGPLv3",
     keywords="vk api framework python",
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
