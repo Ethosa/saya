@@ -13,7 +13,8 @@ from .VkScript import VkScript
 
 class Vk(object):
     def __init__(self, token="", group_id="",
-                 login="", password="", api="5.103"):
+                 login="", password="", api="5.103",
+                 debug=False):
         """auth in VK
 
         Keyword Arguments:
@@ -22,6 +23,7 @@ class Vk(object):
             login {str} -- login. used for authorization through the user (default: {""})
             password {str} -- password. used for authorization through the user (default: {""})
             api {str} -- api version (default: {"5.103"})
+            debug {bool} -- debug log (default: {False})
         """
         self.session = requests.Session()
         self.is_lp = False
@@ -31,16 +33,19 @@ class Vk(object):
             token = self.auth.get_token()
             self.is_lp = True
 
-        self.token = token
-        self.group_id = group_id
         self.v = api
+        self.token = token
+        self.debug = debug
         self.method = ""
         self.events = {}
+        self.group_id = group_id
 
         self.execute = lambda code: self.call_method("execute", {"code": code})
-        self.pyexecute = lambda code: self.call_method("execute", {"code": VkScript().translate(code)})
-        self.longpoll = LongPoll(self)
         self.uploader = Uploader(self)
+        self.longpoll = LongPoll(self)
+        self.pyexecute = lambda code: self.call_method(
+            "execute", {"code": VkScript().translate(code)}
+        )
 
     def call_method(self, method, data={}):
         """call to any method in VK api
@@ -55,11 +60,16 @@ class Vk(object):
         Returns:
             {dict} -- response after calling method
         """
-        data["access_token"] = self.token
         data["v"] = self.v
+        data["access_token"] = self.token
         response = self.session.post(
                 "https://api.vk.com/method/%s" % method, data=data
             ).json()
+        if self.debug:
+            if "error" in response:
+                print('[DEBUG]: Error in called method "%s": %s' % (method, response))
+            else:
+                print('[DEBUG]: Successfully called method "%s": %s' % (method, response))
         return response
 
     def start_listen(self):
@@ -67,12 +77,19 @@ class Vk(object):
         """
         if not self.longpoll.lend:
             self.longpoll.lend = lambda event: self.start_listen
+
+        if self.debug:
+            print("[DEBUG]: On")
+            print("[DEBUG]: Started to listen ...")
+
         for event in self.longpoll.listen(True):
             if "type" in event:
                 if "event_%s" % event["type"] in self.events:
                     self.events["event_%s" % event["type"]](event)
                 elif event["type"] in dir(self):
                     self.__getattribute__(event["type"])(event)
+            elif self.debug:
+                print('[DEBUG]: Unknown event passed: "%s"' % (event))
 
     def __getattr__(self, attr):
         """a convenient alternative for the call_method method
