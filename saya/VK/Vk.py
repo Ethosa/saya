@@ -111,7 +111,7 @@ class Vk(object):
                 obj_type = "%s" % type(func)
 
                 def listen(f):
-                    for event in self.longpoll.listen(True):
+                    for event in self.longpoll.listen(True, True):
                         if event["type"] == attr:
                             func(event)
                 if "method" in obj_type or "function" in obj_type:

@@ -28,7 +28,7 @@ class LongPoll:
             self.method = "https://api.vk.com/method/messages.getLongPollServer"
             self.for_server = "https://%s?act=a_check&key=%s&ts=%s&wait=25&mode=202&version=3"
 
-    def listen(self, event=False):
+    def listen(self, event=False, autorestart=False):
         """Start listening
 
         Yields:
@@ -52,7 +52,11 @@ class LongPoll:
         while 1:
             response = self.session.get(self.for_server % (server, key, ts)).json()
             if "ts" not in response or "updates" not in response:
-                break
+                if not autorestart:
+                    break
+                else:
+                    response = self.session.get(self.method, params=data).json()["response"]
+                    server, ts, key = response["server"], response["ts"], response["key"]
             ts = response["ts"]
             updates = response["updates"]
 
