@@ -15,6 +15,7 @@ class LongPoll:
         self.token = vk.token
         self.group_id = vk.group_id
         self.v = vk.v
+        self.debug = vk.debug
 
         self.events = []
         self.opened = 0
@@ -47,7 +48,7 @@ class LongPoll:
 
         while 1:
             response = self.session.get(self.for_server % (server, key, ts)).json()
-            if "ts" not in response:
+            if "ts" not in response and "updates" not in response:
                 break
             ts = response["ts"]
             updates = response["updates"]
@@ -61,6 +62,8 @@ class LongPoll:
 
             if self.events:
                 yield self.events.pop()
+        if self.debug:
+            print("[DEBUG]: LongPoll has been stopped. trying to call a method ...")
         self.lend(event)
 
     def on_listen_end(self, call):
