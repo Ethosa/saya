@@ -67,7 +67,10 @@ class Vk(object):
             ).json()
         if self.debug:
             if "error" in response:
-                print('[DEBUG]: Error in called method "%s": %s' % (method, response))
+                print('[DEBUG]: Error [%s] in called method "%s": %s' % (
+                        response["error"]["error_code"], method, response["error"]["error_msg"]
+                    )
+                )
             else:
                 print('[DEBUG]: Successfully called method "%s"' % (method))
         return response
