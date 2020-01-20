@@ -10,7 +10,7 @@ class Template(dict):
         self["elements"] = []
 
     def add(self, element):
-        """add new element in template
+        """Adds new element in template.
 
         Arguments:
             element {TemplateElement}
@@ -19,4 +19,9 @@ class Template(dict):
             self["elements"].append(element)
 
     def compile(self):
+        """Compiles Template for sendng in the message.
+
+        Returns:
+            dict -- compiled Template.
+        """
         return json.dumps(self)

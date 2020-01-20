@@ -11,15 +11,15 @@ class LongPoll:
         Arguments:
             vk {Vk} -- authed VK object
         """
-        self.session = vk.session
-        self.token = vk.token
-        self.group_id = vk.group_id
         self.v = vk.v
         self.debug = vk.debug
+        self.token = vk.token
+        self.session = vk.session
+        self.group_id = vk.group_id
 
-        self.events = []
-        self.opened = 0
         self.lend = lambda arg: None
+        self.opened = 0
+        self.events = []
 
         if self.group_id:
             self.method = "https://api.vk.com/method/groups.getLongPollServer"
@@ -57,6 +57,7 @@ class LongPoll:
                 else:
                     response = self.session.get(self.method, params=data).json()["response"]
                     server, ts, key = response["server"], response["ts"], response["key"]
+                    response = self.session.get(self.for_server % (server, key, ts)).json()
             ts = response["ts"]
             updates = response["updates"]
 
@@ -70,7 +71,7 @@ class LongPoll:
             if self.events:
                 yield self.events.pop()
         if self.debug:
-            print("[DEBUG]: LongPoll has been stopped. trying to call a method ...")
+            print("[DEBUG]: LongPoll has been stopped. Trying to restart ...")
         self.lend(event)
 
     def on_listen_end(self, call):
