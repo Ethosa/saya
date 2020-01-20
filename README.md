@@ -22,7 +22,7 @@ from saya import Vk
 -   convenient interaction with Longpoll.
 -   writing your own events for Longpoll and processing them.
 -   convenient work with keyboards.
--   translator Python code in the code on the VK Script (Beta).
+-   translator Python code in the code on the VK Script (Beta). You can read more about it [here](https://github.com/Ethosa/saya/wiki/VkScript#now-support)
 
 ## FAQ
 *Q*: Where can I learn this?  
