@@ -381,7 +381,7 @@ class Uploader:
         if isinstance(files, str):
             files = [files]
 
-        for index, file in enumerate(files):
+        for _, file in enumerate(files):
             response.append(self.session.post(upload_url, files={"file": open(file, "rb")}).json())
 
         return response
