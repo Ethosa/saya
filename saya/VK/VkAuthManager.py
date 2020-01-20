@@ -55,7 +55,7 @@ class VkAuthManager:
         Returns:
             str -- access_token
         """
-        token = ""
+        parsed_token = ""
 
         url1 = ("https://oauth.vk.com/authorize?client_id=2685278"
                 "&scope=1073737727&redirect_uri=https://oauth.vk."
@@ -65,10 +65,10 @@ class VkAuthManager:
         location = regex.findall(r'location.href = "(\S+)"\+addr;', text)
 
         if location:
-            token = regex.findall(r"token=([^&]+)", self.session.get(location[0]).url)
-            token = token[0]
+            parsed_token = regex.findall(r"token=([^&]+)", self.session.get(location[0]).url)
+            parsed_token = parsed_token[0]
 
-        return token
+        return parsed_token
 
     def get_uid(self):
         return regex.findall(r"\"[ ]*uid[ ]*\"[ ]*:[ ]*\"([^\"]+)\"", self.auth_page)
