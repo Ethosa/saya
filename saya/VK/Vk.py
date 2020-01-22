@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
+import logging
 
 import requests
 
@@ -35,10 +36,17 @@ class Vk(object):
 
         self.v = api
         self.token = token
-        self.debug = debug
         self.method = ""
         self.events = {}
         self.group_id = group_id
+
+        self.debug = 50
+        if debug:
+            if isinstance(debug, int):
+                self.debug = debug
+            else:
+                self.debug = 10
+        logging.basicConfig(level=self.debug)
 
         self.execute = lambda code: self.call_method("execute", {"code": code})
         self.uploader = Uploader(self)
@@ -65,14 +73,13 @@ class Vk(object):
         response = self.session.post(
                 "https://api.vk.com/method/%s" % method, data=data
             ).json()
-        if self.debug:
-            if "error" in response:
-                print('[DEBUG]: Error [%s] in called method "%s": %s' % (
-                        response["error"]["error_code"], method, response["error"]["error_msg"]
-                    )
+        if "error" in response:
+            logging.error('Error [%s] in called method "%s": %s' % (
+                    response["error"]["error_code"], method, response["error"]["error_msg"]
                 )
-            else:
-                print('[DEBUG]: Successfully called method "%s"' % (method))
+            )
+        else:
+            logging.debug('Successfully called method "%s"' % (method))
         return response
 
     def start_listen(self):
@@ -81,9 +88,8 @@ class Vk(object):
         if not self.longpoll.lend:
             self.longpoll.lend = lambda event: self.start_listen
 
-        if self.debug:
-            print("[DEBUG]: On")
-            print("[DEBUG]: Started to listen ...")
+        logging.info("On")
+        logging.info("Started to listen ...")
 
         for event in self.longpoll.listen(True):
             if "type" in event:
@@ -91,8 +97,8 @@ class Vk(object):
                     self.events["event_%s" % event["type"]](event)
                 elif event["type"] in dir(self):
                     self.__getattribute__(event["type"])(event)
-            elif self.debug:
-                print('[DEBUG]: Unknown event passed: "%s"' % (event))
+            else:
+                logging.warning('Unknown event passed: "%s"' % (event))
 
     def __getattr__(self, attr):
         """a convenient alternative for the call_method method
