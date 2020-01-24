@@ -30,6 +30,8 @@ class Vk(object):
         """
         self.session = requests.Session()
         self.is_lp = False
+
+        # Parses vk.com, if login and password are not empty.
         if login and password:
             self.auth = VkAuthManager(self, login, password)
             self.auth.login()
@@ -42,12 +44,15 @@ class Vk(object):
         self.events = {}
         self.group_id = group_id
 
+        # Debug settings.
         self.debug = 50
         if debug:
             if isinstance(debug, int):
                 self.debug = debug
             else:
                 self.debug = 10
+
+        # Logger initialize.
         self.logger = logging.getLogger("saya")
         self.logger.setLevel(self.debug)
         handler = logging.StreamHandler()
@@ -81,6 +86,8 @@ class Vk(object):
         response = self.session.post(
                 "https://api.vk.com/method/%s" % method, data=data
             ).json()
+
+        # Logging.
         if "error" in response:
             self.logger.error('Error [%s] in called method "%s": %s' % (
                     response["error"]["error_code"], method, response["error"]["error_msg"]
@@ -102,8 +109,7 @@ class Vk(object):
 
         source = regex.sub(r"\A[\S\s]+?:\n[ ]+", r"", source)
         source = regex.sub("%s" % obj, "API", source)
-        source = regex.sub(r"\s*\Z", r"\n\n", source)
-        source = regex.sub(r"\A\s*", r"\n\n", source)
+        source = "\n\n%s\n\n" % (getsource(func))
 
         def execute(*arguments):
             code = source
@@ -120,9 +126,6 @@ class Vk(object):
     def start_listen(self):
         """starts receiving events from the server
         """
-        if not self.longpoll.lend:
-            self.longpoll.lend = lambda event: self.start_listen
-
         self.logger.info("On")
         self.logger.info("Started to listen ...")
 
@@ -152,7 +155,7 @@ class Vk(object):
                 obj_type = "%s" % type(func)
 
                 def listen(f):
-                    for event in self.longpoll.listen(True, True):
+                    for event in self.longpoll.listen(True):
                         if event["type"] == attr:
                             func(event)
                 if "method" in obj_type or "function" in obj_type:

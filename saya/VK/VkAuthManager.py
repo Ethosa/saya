@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
 
-import regex
+from regex import findall
 from bs4 import BeautifulSoup
 
 
@@ -62,10 +62,10 @@ class VkAuthManager:
                 "com/blank.html&display=page&response_type=token")
 
         text = self.session.get(url1, headers=self.browser).text
-        location = regex.findall(r'location.href = "(\S+)"\+addr;', text)
+        location = findall(r'location.href = "(\S+)"\+addr;', text)
 
         if location:
-            parsed_token = regex.findall(r"token=([^&]+)", self.session.get(location[0]).url)
+            parsed_token = findall(r"token=([^&]+)", self.session.get(location[0]).url)
             if parsed_token:
                 parsed_token = parsed_token[0]
             else:
@@ -74,7 +74,21 @@ class VkAuthManager:
         return parsed_token
 
     def get_uid(self):
-        return regex.findall(r"\"[ ]*uid[ ]*\"[ ]*:[ ]*\"([^\"]+)\"", self.auth_page)
+        """Parses user id.
 
-    def get_domen(self):
-        return regex.findall(r"onLoginDone\('([^']+)", self.auth_page)
+        Returns:
+            string -- user id.
+        """
+        found = findall(r"\"[ ]*uid[ ]*\"[ ]*:[ ]*\"([^\"]+)\"", self.auth_page)
+        if found:
+            return found[0]
+
+    def get_domain(self):
+        """Parses user domain.
+
+        Returns:
+            string -- user domain.
+        """
+        found = findall(r"onLoginDone\('([^']+)", self.auth_page)
+        if found:
+            return found[0]
