@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
 import logging
+from inspect import getsource
 
+import regex
 import requests
 
 from ..StartThread import StartThread
@@ -46,7 +48,8 @@ class Vk(object):
                 self.debug = debug
             else:
                 self.debug = 10
-        logging.basicConfig(level=self.debug)
+        self.logger = logging.getLogger("debug")
+        self.logger.setLevel(self.debug)
 
         self.execute = lambda code: self.call_method("execute", {"code": code})
         self.uploader = Uploader(self)
@@ -74,13 +77,40 @@ class Vk(object):
                 "https://api.vk.com/method/%s" % method, data=data
             ).json()
         if "error" in response:
-            logging.error('Error [%s] in called method "%s": %s' % (
+            self.logger.error('Error [%s] in called method "%s": %s' % (
                     response["error"]["error_code"], method, response["error"]["error_msg"]
                 )
             )
         else:
-            logging.debug('Successfully called method "%s"' % (method))
+            self.logger.debug('Successfully called method "%s"' % (method))
         return response
+
+    def to_execute(self, func):
+        source = getsource(func)
+        obj = regex.findall(r"\A@([^\.]+)", source)[0]
+        args = regex.findall(
+            r"\A[\S\s]+?def[ ]*[\S ]+?\(([^\)]*)\):",
+            source
+        )
+        if args:
+            args = regex.split(r"\s*,\s*", args[0])
+
+        source = regex.sub(r"\A[\S\s]+?:\n[ ]+", r"", source)
+        source = regex.sub("%s" % obj, "API", source)
+        source = regex.sub(r"\s*\Z", r"\n\n", source)
+        source = regex.sub(r"\A\s*", r"\n\n", source)
+
+        def execute(*arguments):
+            code = source
+            for arg, argument in zip(args, arguments):
+                code = regex.sub(
+                    r"([\r\n]+[^\"]+)\b" + arg + r"\b",
+                    r"\1" + repr(argument),
+                    code)
+            if self.debug != 50:
+                self.logger.debug(VkScript().translate(code))
+            return self.pyexecute(code)
+        return execute
 
     def start_listen(self):
         """starts receiving events from the server
@@ -88,8 +118,8 @@ class Vk(object):
         if not self.longpoll.lend:
             self.longpoll.lend = lambda event: self.start_listen
 
-        logging.info("On")
-        logging.info("Started to listen ...")
+        self.logger.info("On")
+        self.logger.info("Started to listen ...")
 
         for event in self.longpoll.listen(True):
             if "type" in event:
@@ -98,7 +128,7 @@ class Vk(object):
                 elif event["type"] in dir(self):
                     self.__getattribute__(event["type"])(event)
             else:
-                logging.warning('Unknown event passed: "%s"' % (event))
+                self.logger.warning('Unknown event passed: "%s"' % (event))
 
     def __getattr__(self, attr):
         """a convenient alternative for the call_method method

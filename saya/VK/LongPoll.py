@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
-import logging
 
 from .Event import Event
 
@@ -13,8 +12,7 @@ class LongPoll:
             vk {Vk} -- authed VK object
         """
         self.v = vk.v
-        self.debug = vk.debug
-        logging.basicConfig(level=self.debug)
+        self.logger = vk.logger
         self.token = vk.token
         self.session = vk.session
         self.group_id = vk.group_id
@@ -48,7 +46,7 @@ class LongPoll:
 
         server, ts, key = response["server"], response["ts"], response["key"]
 
-        logging.info("LongPoll launched")
+        self.logger.info("LongPoll launched")
 
         while 1:
             response = self.session.get(self.for_server % (server, key, ts)).json()
@@ -72,7 +70,7 @@ class LongPoll:
             if self.events:
                 yield self.events.pop()
         if self.debug:
-            logging.error("LongPoll has been stopped. Trying to restart ...")
+            self.logger.error("LongPoll has been stopped. Trying to restart ...")
         self.lend(event)
 
     def on_listen_end(self, call):

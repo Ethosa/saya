@@ -25,14 +25,14 @@ class VkScript(Translator):
 
         # API.messages.send(message="hello saya", peer_id=123123, ...)
         # API.messages.send("message": "hello saya", "peer_id": 123123, ...)
-        ((r"\(([\S ]*?)(\b[a-zA-Z0-9_]+\b)[ ]*={1}[ ]*([^,]+)([\S ]*)\)"),
-         (r'(\1"\2": \3\4)'),
+        ((r"API\.([\S ]+)\(([\S\s]*?)(\b[a-zA-Z0-9_]+\b)[ ]*={1}[ ]*([^,]+)([\S\s]*?)\)"),
+         (r'API.\1(\2"\3": \4\5)'),
          None, 70),
 
         # API.messages.send("message": "hello saya", "peer_id": 123123, ...)
         # API.messages.send({"message": "hello saya", "peer_id": 123123, ...})
-        ((r"\(([^{}][ \S]+):([ \S]+[^{}])\)"),
-         (r"({\1:\2})"),
+        ((r"API\.([\S ]+)\(([^{}][\s\S]+?):([^{}]+?)\)"),
+         (r"API.\1({\2:\3})"),
          None, 0),
 
         # API.call(...)["response"]
@@ -218,7 +218,8 @@ class VkScript(Translator):
         # ------
         # var a = 0
         # a += 1
-        ((r"(?P<enter>[\r\n]+[ ]*)(?P<var_name>[a-zA-Z0-9_]+)(?P<assign>[ ]*=[ ]*[^\r\n]+)"
+        ((r"(?P<enter>[\r\n]+[ ]*)"
+          r"(?P<var_name>[a-zA-Z0-9_]+)(?P<assign>[ ]*=[ ]*[^\r\n]+)"
           r"(?P<other>[\s\S]+(?P=var_name)[ ]*)*"),
          (r"\g<enter>var \g<var_name>\g<assign>\g<other>"),
          None, 50),
@@ -237,7 +238,7 @@ class VkScript(Translator):
 
         # a = 10
         # a = 10;
-        ((r"([\r\n]*[ ]*[^\r\n]+[^;{}\n])\n"),
+        ((r"([\r\n]*[ ]*[^\r\n]+[^;{},\n])\n"),
          (r"\1;\n"),
          None, 0),
 
@@ -258,6 +259,12 @@ class VkScript(Translator):
         ((r"([\r\n]+[ ]*)([^\"]+)False"),
          (r"\1\2false"),
          None, 0),
+
+        # 1_000_000
+        # 1000000
+        ((r"(\d+)_+(\d+)"),
+         (r"\1\2"),
+         None, 100),
 
         # int("1")
         # parseInt("1")
