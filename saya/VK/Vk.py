@@ -48,8 +48,13 @@ class Vk(object):
                 self.debug = debug
             else:
                 self.debug = 10
-        self.logger = logging.getLogger("debug")
+        self.logger = logging.getLogger("saya")
         self.logger.setLevel(self.debug)
+        handler = logging.StreamHandler()
+        handler.setFormatter(
+            logging.Formatter("[%(levelname)s] %(name)s: %(asctime)s — %(message)s")
+        )
+        self.logger.addHandler(handler)
 
         self.execute = lambda code: self.call_method("execute", {"code": code})
         self.uploader = Uploader(self)
