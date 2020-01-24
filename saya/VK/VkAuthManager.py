@@ -66,7 +66,10 @@ class VkAuthManager:
 
         if location:
             parsed_token = regex.findall(r"token=([^&]+)", self.session.get(location[0]).url)
-            parsed_token = parsed_token[0]
+            if parsed_token:
+                parsed_token = parsed_token[0]
+            else:
+                raise ValueError("Login or password is not correct!")
 
         return parsed_token
 
