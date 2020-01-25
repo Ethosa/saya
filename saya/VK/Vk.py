@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
-import logging
+from logging import getLogger, StreamHandler, Formatter
 from inspect import getsource
 
-import regex
-import requests
+from regex import findall, sub, split
+from requests import Session
 
 from ..StartThread import StartThread
 
@@ -28,15 +28,13 @@ class Vk(object):
             api {str} -- api version (default: {"5.103"})
             debug {bool} -- debug log (default: {False})
         """
-        self.session = requests.Session()
-        self.is_lp = False
+        self.session = Session()
 
         # Parses vk.com, if login and password are not empty.
         if login and password:
             self.auth = VkAuthManager(self, login, password)
             self.auth.login()
             token = self.auth.get_token()
-            self.is_lp = True
 
         self.v = api
         self.token = token
@@ -53,11 +51,11 @@ class Vk(object):
                 self.debug = 10
 
         # Logger initialize.
-        self.logger = logging.getLogger("saya")
+        self.logger = getLogger("saya")
         self.logger.setLevel(self.debug)
-        handler = logging.StreamHandler()
+        handler = StreamHandler()
         handler.setFormatter(
-            logging.Formatter("[%(levelname)s] %(name)s: %(asctime)s — %(message)s")
+            Formatter("[%(levelname)s] %(name)s: %(asctime)s — %(message)s")
         )
         self.logger.addHandler(handler)
 
@@ -98,33 +96,43 @@ class Vk(object):
         return response
 
     def to_execute(self, func):
+        """Converts function code to the VKScript code.
+
+        When you call a function using the to_execute decorator, you call its VKScript version.
+
+        Arguments:
+            func {function} -- callable object.
+
+        Returns:
+            func
+        """
         source = getsource(func)
-        obj = regex.findall(r"\A@([^\.]+)", source)[0]
-        args = regex.findall(
+        obj = findall(r"\A@([^\.]+)", source)[0]
+        args = findall(
             r"\A[\S\s]+?def[ ]*[\S ]+?\(([^\)]*)\):",
             source
         )
         if args:
-            args = regex.split(r"\s*,\s*", args[0])
+            args = split(r"\s*,\s*", args[0])
 
-        source = regex.sub(r"\A[\S\s]+?:\n[ ]+", r"", source)
-        source = regex.sub("%s" % obj, "API", source)
+        source = sub(r"\A[\S\s]+?:\n[ ]+", r"", source)
+        source = sub("%s" % obj, "API", source)
         source = "\n\n%s\n\n" % (getsource(func))
 
-        def execute(*arguments):
+        def _execute(*arguments):
             code = source
             for arg, argument in zip(args, arguments):
-                code = regex.sub(
+                code = sub(
                     r"([\r\n]+[^\"]+)\b" + arg + r"\b",
                     r"\1" + repr(argument),
                     code)
             if self.debug != 50:
                 self.logger.debug(VkScript().translate(code))
             return self.pyexecute(code)
-        return execute
+        return _execute
 
     def start_listen(self):
-        """starts receiving events from the server
+        """Starts receiving events from the server.
         """
         self.logger.info("On")
         self.logger.info("Started to listen ...")
@@ -139,7 +147,7 @@ class Vk(object):
                 self.logger.warning('Unknown event passed: "%s"' % (event))
 
     def __getattr__(self, attr):
-        """a convenient alternative for the call_method method
+        """A convenient alternative for the call_method method.
 
         Arguments:
             attr {str} -- method name

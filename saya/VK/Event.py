@@ -12,14 +12,18 @@ class Event(dict):
         if isinstance(dict_obj, dict):
             dict.__init__(self, dict_obj)
         else:
-            timed = types[dict_obj[0]][:]
-            self["type"] = timed[0]
-            timed.pop(0)
-            dict_obj.pop(0)
-            length = len(dict_obj)
-            for index, key in enumerate(timed):
-                if index < length:
-                    self[key] = dict_obj[index]
+            if dict_obj[0] in types:
+                timed = types[dict_obj[0]][:]
+                self["type"] = timed[0]
+                timed.pop(0)
+                dict_obj.pop(0)
+                length = len(dict_obj)
+                for index, key in enumerate(timed):
+                    if index < length:
+                        self[key] = dict_obj[index]
+            else:
+                self["type"] = "untyped"
+                self["object"] = dict_obj
 
 types = {
     1: ["message_flags_replace", "message_id", "flags", "peer_id", "timestamp", "text", "object", "attachments", "random_id"],

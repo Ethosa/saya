@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 
 class VkAuthManager:
     def __init__(self, vk, login, password):
-        """Class for get token via login and password
+        """Class for get token via login and password.
 
         Arguments:
             vk {Vk} -- authed VK object
@@ -27,7 +27,7 @@ class VkAuthManager:
         }
 
     def login(self):
-        """log in VK
+        """log in VK.
 
         Returns:
             bool -- is logged
@@ -50,19 +50,17 @@ class VkAuthManager:
             return True
 
     def get_token(self):
-        """get token via Kate Mobile
+        """Gets token via Kate Mobile.
 
         Returns:
             str -- access_token
         """
-        parsed_token = ""
-
         url1 = ("https://oauth.vk.com/authorize?client_id=2685278"
                 "&scope=1073737727&redirect_uri=https://oauth.vk."
                 "com/blank.html&display=page&response_type=token")
 
         text = self.session.get(url1, headers=self.browser).text
-        location = findall(r'location.href = "(\S+)"\+addr;', text)
+        location = findall(r'location.href[ ]*=[ ]*"(\S+)"\+addr;', text)
 
         if location:
             parsed_token = findall(r"token=([^&]+)", self.session.get(location[0]).url)
