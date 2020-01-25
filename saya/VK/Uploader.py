@@ -4,6 +4,11 @@
 
 class Uploader:
     def __init__(self, vk):
+        """Initializes new Uploader object.
+
+        Arguments:
+            vk {Vk}
+        """
         self.session = vk.session
         self.call_method = vk.call_method
 
@@ -29,7 +34,7 @@ class Uploader:
         if not group_id:
             del data["group_id"]
 
-        response = self.upload_files(data, files, "photos.getUploadServer")
+        response = self._upload_files(data, files, "photos.getUploadServer")
 
         data["caption"] = caption
         data["server"] = response["server"]
@@ -52,7 +57,7 @@ class Uploader:
         Returns:
             dict -- response after audio saved
         """
-        response = self.upload_files({}, files, "audio.getUploadServer")
+        response = self._upload_files({}, files, "audio.getUploadServer")
         data = {
             "server": response["server"],
             "audio": response["audio"],
@@ -86,7 +91,7 @@ class Uploader:
         if crop_width:
             data["crop_width"] = crop_width
 
-        response = self.upload_files(data, files, "photos.getChatUploadServer")
+        response = self._upload_files(data, files, "photos.getChatUploadServer")
 
         data = {"file": response["response"]}
 
@@ -117,7 +122,7 @@ class Uploader:
             "crop_y2": crop_y2
         }
 
-        response = self.upload_files(data, files, "photos.getOwnerCoverPhotoUploadServer")
+        response = self._upload_files(data, files, "photos.getOwnerCoverPhotoUploadServer")
         data = {
             "hash": response["hash"],
             "photo": response["photo"]
@@ -146,7 +151,7 @@ class Uploader:
         if group_id:
             data["group_id"] = group_id
 
-        response = self.upload_files(data, files, "docs.get%sUploadServer" % ("Wall" if is_wall else ""))
+        response = self._upload_files(data, files, "docs.get%sUploadServer" % ("Wall" if is_wall else ""))
         data = {
             "file": response["file"],
             "title": title,
@@ -159,7 +164,7 @@ class Uploader:
 
     def document_message(self, files, peer_id, doc_type="doc", title="",
                          tags="", return_tags=0):
-        """upload document in message
+        """Uploads document in message.
 
         Arguments:
             files {str or list} -- file path or file paths
@@ -179,7 +184,7 @@ class Uploader:
             "type": doc_type
         }
 
-        response = self.upload_files(data, files, "docs.getMessagesUploadServer")
+        response = self._upload_files(data, files, "docs.getMessagesUploadServer")
         data = {
             "file": response["file"],
             "title": title,
@@ -225,7 +230,7 @@ class Uploader:
         """
         data = {"peer_id": peer_id}
 
-        response = self.upload_files(data, files, "photos.getMessagesUploadServer")
+        response = self._upload_files(data, files, "photos.getMessagesUploadServer")
         del data["peer_id"]
 
         data["server"] = response["server"]
@@ -268,7 +273,7 @@ class Uploader:
         if main_photo:
             data["main_photo"] = main_photo
 
-        response = self.upload_files(data, files, "photos.getMarketUploadServer")
+        response = self._upload_files(data, files, "photos.getMarketUploadServer")
 
         data = {"group_id": group_id}
         data["server"] = response["server"]
@@ -297,7 +302,7 @@ class Uploader:
         """
         data = {"group_id": group_id}
 
-        response = self.upload_files(data, files, "photos.getMarketAlbumUploadServer")
+        response = self._upload_files(data, files, "photos.getMarketAlbumUploadServer")
 
         data["server"] = response["server"]
         data["hash"] = response["hash"]
@@ -322,7 +327,7 @@ class Uploader:
         if owner_id:
             data["owner_id"] = owner_id
 
-        response = self.upload_files(data, files, "photos.getOwnerPhotoUploadServer")
+        response = self._upload_files(data, files, "photos.getOwnerPhotoUploadServer")
         del data["owner_id"]
 
         data["server"] = response["server"]
@@ -386,21 +391,21 @@ class Uploader:
 
         return response
 
-    def upload_files(self, data, files, method):
+    def _upload_files(self, data, files, method):
         upload_server = self.call_method(method, data)
         upload_url = upload_server["response"]["upload_url"]
-        upload_files = {}
+        uplfiles = {}
 
         if isinstance(files, str):
             files = [files]
 
         if len(files) > 1:
             for index, file in enumerate(files):
-                upload_files["file%d" % (index+1)] = open(file, "rb")
+                uplfiles["file%d" % (index+1)] = open(file, "rb")
         else:
-            upload_files["file"] = open(files[0], "rb")
+            uplfiles["file"] = open(files[0], "rb")
 
-        response = self.session.post(upload_url, files=upload_files).json()
+        response = self.session.post(upload_url, files=uplfiles).json()
         return response
 
     def wall_photo(self, files, group_id=None,
@@ -422,7 +427,7 @@ class Uploader:
         if not group_id:
             del data["group_id"]
 
-        response = self.upload_files(data, files, "photos.getWallUploadServer")
+        response = self._upload_files(data, files, "photos.getWallUploadServer")
 
         if user_id:
             data["user_id"] = user_id

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
 
-import json
+from json import dumps
 
 
 class Template(dict):
@@ -24,4 +24,4 @@ class Template(dict):
         Returns:
             dict -- compiled Template.
         """
-        return json.dumps(self)
+        return dumps(self)
