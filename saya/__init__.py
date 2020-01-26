@@ -3,13 +3,13 @@
 
 from .VK import (Vk, LongPoll, Event, VkAuthManager, VkScript,
                  Uploader, Button, Keyboard, TemplateElement,
-                 Template)
+                 Template, StreamingAPI)
 
 __copyright__ = "2020"
-__version__ = "0.1.53"
+__version__ = "0.1.60"
 __authors__ = ["Ethosa"]
 
 if __name__ == '__main__':
     print(Vk, LongPoll, VkAuthManager, Event, VkScript,
           Uploader, Button, Keyboard, TemplateElement,
-          Template)
+          Template, StreamingAPI)
