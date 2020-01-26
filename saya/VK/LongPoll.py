@@ -66,10 +66,10 @@ class LongPoll:
                     else:
                         yield update
 
-    @deprecated("0.1.52")
+    @deprecated("0.1.52", "0.2.0")
     def on_listen_end(self, call):
         pass
 
-    @deprecated("0.1.52")
+    @deprecated("0.1.52", "0.2.0")
     def push(self, event):
         pass
