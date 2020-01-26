@@ -27,10 +27,8 @@ class VkAuthManager:
         }
 
     def login(self):
-        """log in VK.
-
-        Returns:
-            bool -- is logged
+        """
+        log in VK.
         """
         url = "https://vk.com"
         data = self.session.get(url, headers=self.browser).text
@@ -47,7 +45,8 @@ class VkAuthManager:
         response = self.session.post("https://login.vk.com/", headers=self.browser, data=form)
         if 'onLoginDone' in response.text:
             self.auth_page = response.text
-            return True
+        else:
+            raise ValueError("Login or password is not correct!")
 
     def get_token(self):
         """Gets token via Kate Mobile.
@@ -68,8 +67,7 @@ class VkAuthManager:
                 parsed_token = parsed_token[0]
             else:
                 raise ValueError("Login or password is not correct!")
-
-        return parsed_token
+            return parsed_token
 
     def get_uid(self):
         """Parses user id.

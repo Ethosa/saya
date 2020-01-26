@@ -7,6 +7,11 @@ from websocket import create_connection
 
 class StreamingAPI:
     def __init__(self, vk):
+        """Initialize StreamingAPI object.
+
+        Arguments:
+            vk {Vk} -- Vk object.
+        """
         self.logger = vk.logger
         self.session = vk.session
         self.call_method = vk.call_method
