@@ -34,6 +34,7 @@ setuptools.setup(
         "requests",
         "regex",
         "beautifulsoup4",
-        "retranslator"
+        "retranslator",
+        "websocket-client"
     ]
 )
