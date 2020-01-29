@@ -5,16 +5,17 @@ from retranslator import Translator
 
 
 class VkScript(Translator):
-    def __init__(self, codeString="", rules=[], useRegex=False):
+    def __init__(self, codeString="", rules=[], useRegex=False, debug=False):
         """Python to VK Script translator
 
         Keyword Arguments:
             codeString {str} -- python code (default: {""})
             rules {list} -- rules (default: {[]})
             useRegex {bool} -- use regex or re library (default: {False})
+            debug {bool}
         """
         rules.extend(VkScript.RULES)
-        Translator.__init__(self, codeString, rules, useRegex)
+        Translator.__init__(self, codeString, rules, useRegex, debug)
 
     RULES = [
         # # ...

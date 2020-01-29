@@ -6,17 +6,13 @@ from bs4 import BeautifulSoup
 
 
 class VkAuthManager:
-    def __init__(self, vk, login, password):
+    def __init__(self, vk):
         """Class for get token via login and password.
 
         Arguments:
-            vk {Vk} -- authed VK object
-            login {str} -- login. used for authorization through the user (default: {""})
-            password {str} -- password. used for authorization through the user (default: {""})
+            vk {Vk} -- VK object.
         """
         self.session = vk.session
-        self.email = login
-        self.password = password
         self.browser = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -26,7 +22,7 @@ class VkAuthManager:
             'DNT': '1'
         }
 
-    def login(self):
+    def login(self, email, password):
         """
         log in VK.
         """
@@ -40,7 +36,7 @@ class VkAuthManager:
                 'recaptcha': '', 'captcha_sid': '', 'captcha_key': '',
                 '_origin': 'https://vk.com', 'ip_h': ip_h["value"],
                 'lg_h': lg_h["value"], 'ul': '',
-                'email': self.email, 'pass': self.password}
+                'email': email, 'pass': password}
 
         response = self.session.post("https://login.vk.com/", headers=self.browser, data=form)
         if 'onLoginDone' in response.text:

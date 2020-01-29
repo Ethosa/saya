@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
 
-from .Event import Event
+from .Event import event
 from ..Deprecated import deprecated
 
 
@@ -25,8 +25,12 @@ class LongPoll:
             self.method = "https://api.vk.com/method/messages.getLongPollServer"
             self.for_server = "https://%s?act=a_check&key=%s&ts=%s&wait=25&mode=202&version=3"
 
-    def listen(self, event=False):
-        """Starts listening.
+    def listen(self, ev=False):
+        """
+        Starts listening.
+
+        Keyword Argments:
+            ev {bool} -- always return dict object.
 
         Yields:
             {dict} -- new event
@@ -61,8 +65,8 @@ class LongPoll:
 
             for update in updates:
                 if update:
-                    if event:
-                        yield Event(update)
+                    if ev:
+                        yield event(update)
                     else:
                         yield update
 
@@ -71,5 +75,5 @@ class LongPoll:
         pass
 
     @deprecated("0.1.52", "0.2.0")
-    def push(self, event):
+    def push(self, ev):
         pass

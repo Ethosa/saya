@@ -2,28 +2,30 @@
 # author: Ethosa
 
 
-class Event(dict):
-    def __init__(self, dict_obj):
-        """создать объект dict из списка
+def event(obj):
+    """
+    Creates a dict object from list
 
-        Arguments:
-            dict_obj {dict or list} -- event from longpoll
-        """
-        if isinstance(dict_obj, dict):
-            dict.__init__(self, dict_obj)
-        else:
-            if dict_obj[0] in types:
-                timed = types[dict_obj[0]][:]
-                self["type"] = timed[0]
-                timed.pop(0)
-                dict_obj.pop(0)
-                length = len(dict_obj)
-                for index, key in enumerate(timed):
-                    if index < length:
-                        self[key] = dict_obj[index]
-            else:
-                self["type"] = "untyped"
-                self["object"] = dict_obj
+    Arguments:
+        obj {dict or list} -- event from longpoll
+    """
+    if not isinstance(obj, list):
+        return obj
+
+    out = {}
+    if obj[0] in types:
+        timed = types[obj[0]][:]
+        out["type"] = timed[0]
+        timed.pop(0)
+        obj.pop(0)
+        length = len(obj)
+        for index, key in enumerate(timed):
+            if index < length:
+                out[key] = obj[index]
+    else:
+        out["type"] = "untyped"
+        out["object"] = obj
+    return out
 
 types = {
     1: ["message_flags_replace", "message_id", "flags", "peer_id", "timestamp", "text", "object", "attachments", "random_id"],
