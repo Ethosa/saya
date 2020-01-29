@@ -28,11 +28,10 @@ class Uploader:
             dict -- response after photo saved
         """
         data = {
-            "album_id": album_id,
-            "group_id": group_id
+            "album_id": album_id
         }
-        if not group_id:
-            del data["group_id"]
+        if group_id:
+            data["group_id"] = group_id
 
         response = self._upload_files(data, files, "photos.getUploadServer")
 
@@ -41,8 +40,7 @@ class Uploader:
         data["hash"] = response["hash"]
         data["photos_list"] = response["photos_list"]
 
-        response = self.call_method("photos.save", data)
-        return response
+        return self.call_method("photos.save", data)
 
     def audio(self, files, artist="", title=""):
         """Upload audio file
@@ -64,8 +62,7 @@ class Uploader:
             "hash": response["hash"]
         }
 
-        response = self.call_method("audio.save", data)
-        return response
+        return self.call_method("audio.save", data)
 
     def chat_photo(self, files, chat_id, crop_x=None,
                    crop_y=None, crop_width=None):
@@ -95,8 +92,7 @@ class Uploader:
 
         data = {"file": response["response"]}
 
-        response = self.call_method("messages.setChatPhoto", data)
-        return response
+        return self.call_method("messages.setChatPhoto", data)
 
     def cover_photo(self, files, group_id, crop_x=0, crop_y=0, crop_x2=795, crop_y2=200):
         """update group cover photo
@@ -128,8 +124,7 @@ class Uploader:
             "photo": response["photo"]
         }
 
-        response = self.call_method("photos.saveOwnerCoverPhoto", data)
-        return response
+        return self.call_method("photos.saveOwnerCoverPhoto", data)
 
     def document(self, files, group_id=None, title="", tags="", return_tags=0, is_wall=False):
         """upload document
@@ -159,8 +154,7 @@ class Uploader:
             "return_tags": return_tags
         }
 
-        response = self.call_method("docs.save", data)
-        return response
+        return self.call_method("docs.save", data)
 
     def document_message(self, files, peer_id, doc_type="doc", title="",
                          tags="", return_tags=0):
@@ -192,30 +186,30 @@ class Uploader:
             "return_tags": return_tags
         }
 
-        response = self.call_method("docs.save", data)
-        return response
+        return self.call_method("docs.save", data)
 
-    def format(self, response, type_obj="photo"):
+    def format(self, response, formtype="photo"):
         """response formatting
 
         Arguments:
             response {dict} -- response after object saved
 
         Keyword Arguments:
-            type_obj {str} -- "photo", "video", "audio" etc (default: {"photo"})
+            formtype {str} -- "photo", "video", "audio" etc (default: {"photo"})
         """
         if "response" in response:
             response = response["response"]
         if "type" in response:
             response = response[response["type"]]
+
         if isinstance(response, dict):
             if "owner_id" in response and "id" in response:
-                return "%s%s_%s" % (type_obj, response["owner_id"], response["id"])
+                return "%s%s_%s" % (formtype, response["owner_id"], response["id"])
         elif isinstance(response, list):
             photos = []
             for photo in response:
                 if "owner_id" in photo and "id" in photo:
-                    photos.append("%s%s_%s" % (type_obj, photo["owner_id"], photo["id"]))
+                    photos.append("%s%s_%s" % (formtype, photo["owner_id"], photo["id"]))
             return ",".join(photos)
 
     def message_photo(self, files, peer_id):
@@ -230,15 +224,14 @@ class Uploader:
         """
         data = {"peer_id": peer_id}
 
-        response = self._upload_files(data, files, "photos.getMessagesUploadServer")
-        del data["peer_id"]
+        response = self._upload_files(
+            data, files, "photos.getMessagesUploadServer")
 
         data["server"] = response["server"]
         data["hash"] = response["hash"]
         data["photo"] = response["photo"]
 
-        response = self.call_method("photos.saveMessagesPhoto", data)
-        return response
+        return self.call_method("photos.saveMessagesPhoto", data)
 
     def market_photo(self, files, group_id, main_photo=None,
                      crop_x=None, crop_y=None, crop_width=None):
@@ -282,8 +275,7 @@ class Uploader:
         data["crop_data"] = response["crop_data"]
         data["crop_hash"] = response["crop_hash"]
 
-        response = self.call_method("photos.saveMarketPhoto", data)
-        return response
+        return self.call_method("photos.saveMarketPhoto", data)
 
     def market_album_photo(self, files, group_id):
         """Uploading photos for a selection of goods
@@ -308,8 +300,7 @@ class Uploader:
         data["hash"] = response["hash"]
         data["photo"] = response["photo"]
 
-        response = self.call_method("photos.saveMarketAlbumPhoto", data)
-        return response
+        return self.call_method("photos.saveMarketAlbumPhoto", data)
 
     def profile_photo(self, files, owner_id=None):
         """update profile photo
@@ -334,8 +325,7 @@ class Uploader:
         data["hash"] = response["hash"]
         data["photo"] = response["photo"]
 
-        response = self.call_method("photos.saveOwnerPhoto", data)
-        return response
+        return self.call_method("photos.saveOwnerPhoto", data)
 
     def video(self, files, album_id, name="", description="", is_private=0,
               wallpost=0, link="", group_id=0, privacy_view="", privacy_comment="",
@@ -368,7 +358,6 @@ class Uploader:
             "is_private": is_private,
             "wallpost": wallpost,
             "link": link,
-            "group_id": group_id,
             "album_id": album_id,
             "privacy_view": privacy_view,
             "privacy_comment": privacy_comment,
@@ -376,24 +365,27 @@ class Uploader:
             "repeat": repeat,
             "compression": compression
         }
-        if not group_id:
-            del data["group_id"]
+        if group_id:
+            data["group_id"] = group_id
 
-        response = self.call_method("video.save", data)
-        upload_url = response["response"]["upload_url"]
+        upload_url = self.call_method(
+            "video.save", data)["response"]["upload_url"]
         response = []
 
         if isinstance(files, str):
             files = [files]
 
         for _, file in enumerate(files):
-            response.append(self.session.post(upload_url, files={"file": open(file, "rb")}).json())
+            response.append(
+                self.session.post(
+                    upload_url, files={"file": open(file, "rb")}
+                ).json()
+            )
 
         return response
 
     def _upload_files(self, data, files, method):
-        upload_server = self.call_method(method, data)
-        upload_url = upload_server["response"]["upload_url"]
+        upload_url = self.call_method(method, data)["response"]["upload_url"]
         uplfiles = {}
 
         if isinstance(files, str):
@@ -405,8 +397,7 @@ class Uploader:
         else:
             uplfiles["file"] = open(files[0], "rb")
 
-        response = self.session.post(upload_url, files=uplfiles).json()
-        return response
+        return self.session.post(upload_url, files=uplfiles).json()
 
     def wall_photo(self, files, group_id=None,
                    user_id=None, caption=""):
@@ -423,9 +414,9 @@ class Uploader:
         Returns:
             dict -- response after photo saved
         """
-        data = {"group_id": group_id}
-        if not group_id:
-            del data["group_id"]
+        data = {}
+        if group_id:
+            data["group_id"] = group_id
 
         response = self._upload_files(data, files, "photos.getWallUploadServer")
 
@@ -436,5 +427,4 @@ class Uploader:
         data["hash"] = response["hash"]
         data["photo"] = response["photo"]
 
-        response = self.call_method("photos.saveWallPhoto", data)
-        return response
+        return self.call_method("photos.saveWallPhoto", data)

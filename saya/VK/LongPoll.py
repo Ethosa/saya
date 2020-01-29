@@ -14,16 +14,38 @@ class LongPoll:
         """
         self.v = vk.v
         self.logger = vk.logger
-        self.token = vk.token
         self.session = vk.session
-        self.group_id = vk.group_id
 
-        if self.group_id:
+        self.data = {
+            "access_token": vk.token,
+            "v": vk.v
+        }
+
+        if vk.group_id:
+            self.data["group_id"] = vk.group_id
             self.method = "https://api.vk.com/method/groups.getLongPollServer"
             self.for_server = "%s?act=a_check&key=%s&ts=%s&wait=25"
         else:
             self.method = "https://api.vk.com/method/messages.getLongPollServer"
             self.for_server = "https://%s?act=a_check&key=%s&ts=%s&wait=25&mode=202&version=3"
+
+    def _get_server(self):
+        """
+        Returns server, ts and key.
+
+        Returns:
+            {str}, {str}, {str} -- server, ts and key
+
+        Raises:
+            ValueError -- Invalid authentication.
+        """
+        response = self.session.get(self.method, params=self.data).json()
+        if "response" in response:
+            response = response["response"]
+        else:
+            raise ValueError("Invalid authentication.")
+        server, ts, key = response["server"], response["ts"], response["key"]
+        return server, ts, key
 
     def listen(self, ev=False):
         """
@@ -35,21 +57,8 @@ class LongPoll:
         Yields:
             {dict} -- new event
         """
-        data = {
-            "access_token": self.token,
-            "group_id": self.group_id,
-            "v": self.v
-        }
-        if not self.group_id:
-            del data["group_id"]
-
         # Get server info and check it.
-        response = self.session.get(self.method, params=data).json()
-        if "response" in response:
-            response = response["response"]
-        else:
-            raise ValueError("Invalid authentication.")
-        server, ts, key = response["server"], response["ts"], response["key"]
+        server, ts, key = self._get_server()
 
         self.logger.info("LongPoll launched")
 
@@ -57,8 +66,7 @@ class LongPoll:
         while 1:
             response = self.session.get(self.for_server % (server, key, ts)).json()
             if "ts" not in response or "updates" not in response:
-                response = self.session.get(self.method, params=data).json()["response"]
-                server, ts, key = response["server"], response["ts"], response["key"]
+                server, ts, key = self._get_server()
                 response = self.session.get(self.for_server % (server, key, ts)).json()
             ts = response["ts"]
             updates = response["updates"]
