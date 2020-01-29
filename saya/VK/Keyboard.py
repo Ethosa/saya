@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
 
-import json
+from json import dumps
 
 
 class Keyboard(dict):
@@ -55,4 +55,4 @@ class Keyboard(dict):
         Returns:
             dict -- dictionary object for message sending.
         """
-        return json.dumps(self)
+        return dumps(self)

@@ -6,12 +6,12 @@ from inspect import getsource
 from regex import findall, sub, split
 from requests import Session
 
-from ..StartThread import StartThread
-
 from .LongPoll import LongPoll
 from .VkAuthManager import VkAuthManager
 from .Uploader import Uploader
 from .VkScript import VkScript
+
+from ..StartThread import StartThread
 
 
 class Vk(object):
@@ -32,8 +32,8 @@ class Vk(object):
 
         # Parses vk.com, if login and password are not empty.
         if login and password:
-            self.auth = VkAuthManager(self, login, password)
-            self.auth.login()
+            self.auth = VkAuthManager(self)
+            self.auth.login(login, password)
             token = self.auth.get_token()
 
         self.v = api
@@ -132,7 +132,8 @@ class Vk(object):
         return _execute
 
     def start_listen(self):
-        """Starts receiving events from the server.
+        """
+        Starts receiving events from the server.
         """
         self.logger.info("On")
         self.logger.info("Started to listen ...")
@@ -156,20 +157,21 @@ class Vk(object):
         Returns:
             response after calling method
         """
-        if attr.startswith("on_"):
+        if attr.startswith("on_"):  # e.g. on_message_new
             attr = attr[3:]
 
-            def decorator(func):
-                obj_type = "%s" % type(func)
+            def decorator(obj):
+                obj_type = "%s" % type(obj)
 
                 def listen(f):
                     for event in self.longpoll.listen(True):
                         if event["type"] == attr:
-                            func(event)
+                            obj(event)
+                # if obj is callable
                 if "method" in obj_type or "function" in obj_type:
-                    StartThread(listen, func).start()
+                    StartThread(listen, obj).start()
                 else:
-                    if func:
+                    if obj:
                         def _decorator(call):
                             StartThread(listen, call).start()
                         return _decorator
