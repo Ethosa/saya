@@ -12,6 +12,7 @@ from .Uploader import Uploader
 from .VkScript import VkScript
 
 from ..StartThread import StartThread
+from ..Deprecated import deprecated
 
 
 class Vk(object):
@@ -88,13 +89,15 @@ class Vk(object):
         # Logging.
         if "error" in response:
             self.logger.error('Error [%s] in called method "%s": %s' % (
-                    response["error"]["error_code"], method, response["error"]["error_msg"]
+                    response["error"]["error_code"], method,
+                    response["error"]["error_msg"]
                 )
             )
         else:
             self.logger.debug('Successfully called method "%s"' % (method))
         return response
 
+    @deprecated("0.1.81", "0.2.0")
     def to_execute(self, func):
         """Converts function code to the VKScript code.
 
@@ -107,6 +110,7 @@ class Vk(object):
             func
         """
         source = getsource(func)
+        source_code = "\n\n%s\n\n" % (source)
         obj = findall(r"\A@([^\.]+)", source)[0]
         args = findall(
             r"\A[\S\s]+?def[ ]*[\S ]+?\(([^\)]*)\):",
@@ -117,18 +121,17 @@ class Vk(object):
 
         source = sub(r"\A[\S\s]+?:\n[ ]+", r"", source)
         source = sub("%s" % obj, "API", source)
-        source = "\n\n%s\n\n" % (getsource(func))
 
         def _execute(*arguments):
-            code = source
+            code = source_code
             for arg, argument in zip(args, arguments):
                 code = sub(
                     r"([\r\n]+[^\"]+)\b" + arg + r"\b",
                     r"\1" + repr(argument),
                     code)
-            if self.debug != 50:
-                self.logger.debug(VkScript().translate(code))
-            return self.pyexecute(code)
+            code = VkScript().translate(code)
+            self.logger.debug(code)
+            return self.execute(code)
         return _execute
 
     def start_listen(self):
@@ -143,7 +146,7 @@ class Vk(object):
                 if "event_%s" % event["type"] in self.events:
                     self.events["event_%s" % event["type"]](event)
                 elif event["type"] in dir(self):
-                    self.__getattribute__(event["type"])(event)
+                    getattr(self, event["type"])(event)
             else:
                 self.logger.warning('Unknown event passed: "%s"' % (event))
 

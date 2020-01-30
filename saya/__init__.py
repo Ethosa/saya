@@ -6,7 +6,7 @@ from .VK import (Vk, LongPoll, event, VkAuthManager, VkScript,
                  Template, StreamingAPI)
 
 __copyright__ = "2020"
-__version__ = "0.1.80"
+__version__ = "0.1.81"
 __authors__ = ["Ethosa"]
 
 if __name__ == '__main__':
