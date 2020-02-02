@@ -146,7 +146,10 @@ class Uploader:
         if group_id:
             data["group_id"] = group_id
 
-        response = self._upload_files(data, files, "docs.get%sUploadServer" % ("Wall" if is_wall else ""))
+        response = self._upload_files(
+            data, files,
+            "docs.get%sUploadServer" % ("Wall" if is_wall else "")
+        )
         data = {
             "file": response["file"],
             "title": title,
@@ -178,7 +181,9 @@ class Uploader:
             "type": doc_type
         }
 
-        response = self._upload_files(data, files, "docs.getMessagesUploadServer")
+        response = self._upload_files(
+            data, files, "docs.getMessagesUploadServer"
+        )
         data = {
             "file": response["file"],
             "title": title,
@@ -188,7 +193,8 @@ class Uploader:
 
         return self.call_method("docs.save", data)
 
-    def format(self, response, formtype="photo"):
+    @staticmethod
+    def format(response, formtype="photo"):
         """response formatting
 
         Arguments:
@@ -197,20 +203,18 @@ class Uploader:
         Keyword Arguments:
             formtype {str} -- "photo", "video", "audio" etc (default: {"photo"})
         """
-        if "response" in response:
-            response = response["response"]
-        if "type" in response:
-            response = response[response["type"]]
+        response = response.get("response", response)
+        response = response.get("type", response)
 
         if isinstance(response, dict):
             if "owner_id" in response and "id" in response:
                 return "%s%s_%s" % (formtype, response["owner_id"], response["id"])
         elif isinstance(response, list):
-            photos = []
-            for photo in response:
-                if "owner_id" in photo and "id" in photo:
-                    photos.append("%s%s_%s" % (formtype, photo["owner_id"], photo["id"]))
-            return ",".join(photos)
+            objs = []
+            for obj in response:
+                if "owner_id" in obj and "id" in obj:
+                    objs.append("%s%s_%s" % (formtype, obj["owner_id"], obj["id"]))
+            return ",".join(objs)
 
     def message_photo(self, files, peer_id):
         """upload photo in message
