@@ -6,6 +6,12 @@ from json import dumps
 
 class Template(dict):
     def __init__(self, ttype="carousel"):
+        """
+        Creates a Template object.
+
+        Keyword Arguments:
+            ttype {str} -- template type. (default: {"carousel"})
+        """
         self["type"] = ttype
         self["elements"] = []
 

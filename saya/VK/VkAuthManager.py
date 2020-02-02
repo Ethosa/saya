@@ -50,6 +50,7 @@ class VkAuthManager:
         Returns:
             str -- access_token
         """
+        # Kate Mobile token
         url1 = ("https://oauth.vk.com/authorize?client_id=2685278"
                 "&scope=1073737727&redirect_uri=https://oauth.vk."
                 "com/blank.html&display=page&response_type=token")

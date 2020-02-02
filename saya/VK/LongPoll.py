@@ -44,8 +44,7 @@ class LongPoll:
             response = response["response"]
         else:
             raise ValueError("Invalid authentication.")
-        server, ts, key = response["server"], response["ts"], response["key"]
-        return server, ts, key
+        return response["server"], response["ts"], response["key"]
 
     def listen(self, ev=False):
         """
@@ -69,9 +68,8 @@ class LongPoll:
                 server, ts, key = self._get_server()
                 response = self.session.get(self.for_server % (server, key, ts)).json()
             ts = response["ts"]
-            updates = response["updates"]
 
-            for update in updates:
+            for update in response["updates"]:
                 if update:
                     if ev:
                         yield event(update)

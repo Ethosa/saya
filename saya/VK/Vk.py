@@ -39,9 +39,10 @@ class Vk(object):
 
         self.v = api
         self.token = token
+        self.group_id = group_id
+
         self.method = ""
         self.events = {}
-        self.group_id = group_id
 
         # Debug settings.
         self.debug = 50
@@ -60,12 +61,8 @@ class Vk(object):
         )
         self.logger.addHandler(handler)
 
-        self.execute = lambda code: self.call_method("execute", {"code": code})
         self.uploader = Uploader(self)
         self.longpoll = LongPoll(self)
-        self.pyexecute = lambda code: self.call_method(
-            "execute", {"code": VkScript().translate(code)}
-        )
 
     def call_method(self, method, data={}):
         """call to any method in VK api
@@ -78,7 +75,7 @@ class Vk(object):
             data {dict} -- data to send (default: {{}})
 
         Returns:
-            {dict} -- response after calling method
+            dict -- response after calling method
         """
         data["v"] = self.v
         data["access_token"] = self.token
@@ -96,6 +93,30 @@ class Vk(object):
         else:
             self.logger.debug('Successfully called method "%s"' % (method))
         return response
+
+    def execute(self, code):
+        """
+        Calls an execute VK API method
+
+        Arguments:
+            code {str} -- VKScript code.
+
+        Returns:
+            dict -- response
+        """
+        return self.call_method("execute", {"code": code})
+
+    def pyexecute(self, code):
+        """
+        Calls an execute VK API method
+
+        Arguments:
+            code {str} -- Python code.
+
+        Returns:
+            dict -- response
+        """
+        return self.execute(VkScript().translate(code))
 
     @deprecated("0.1.81", "0.2.0")
     def to_execute(self, func):
@@ -138,13 +159,10 @@ class Vk(object):
         """
         Starts receiving events from the server.
         """
-        self.logger.info("On")
-        self.logger.info("Started to listen ...")
-
         for event in self.longpoll.listen(True):
             if "type" in event:
-                if "event_%s" % event["type"] in self.events:
-                    self.events["event_%s" % event["type"]](event)
+                if event["type"] in self.events:
+                    self.events[event["type"]](event)
                 elif event["type"] in dir(self):
                     getattr(self, event["type"])(event)
             else:
@@ -164,25 +182,23 @@ class Vk(object):
             attr = attr[3:]
 
             def decorator(obj):
-                obj_type = "%s" % type(obj)
-
                 def listen(f):
                     for event in self.longpoll.listen(True):
                         if event["type"] == attr:
                             obj(event)
-                # if obj is callable
-                if "method" in obj_type or "function" in obj_type:
+
+                if callable(obj):
                     StartThread(listen, obj).start()
                 else:
+                    # obj should be boolean
                     if obj:
                         def _decorator(call):
                             StartThread(listen, call).start()
-                        return _decorator
                     else:
                         def _decorator(call):
-                            self.events["event_%s" % attr] = call
+                            self.events[attr] = call
                             return call
-                        return _decorator
+                    return _decorator
 
             return decorator
         elif self.method:
