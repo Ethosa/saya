@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="saya",
-    version="0.1.90",
+    version="0.2.1",
     author="Ethosa",
     author_email="social.ethosa@gmail.com",
     description="The framework for vk",
@@ -17,8 +17,6 @@ setuptools.setup(
     keywords="vk api framework python",
     classifiers=[
         "Development Status :: 4 - Beta",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
@@ -31,12 +29,13 @@ setuptools.setup(
         "Github": "https://github.com/Ethosa/saya",
         "Documentation": "https://github.com/Ethosa/saya/blob/master/README.md",
     },
-    python_requires=">=2",
+    python_requires=">=3",
     install_requires=[
         "requests",
         "regex",
         "beautifulsoup4",
         "retranslator",
-        "websocket-client"
+        "websocket-client",
+        "aiohttp",
     ]
 )
