@@ -5,6 +5,7 @@ from time import ctime as current_time
 from aiohttp import ClientSession
 
 from .ALongPoll import ALongPoll
+from .AUploader import AUploader
 from ..VK.VkAuthManager import VkAuthManager
 from ..VK.VkScript import VkScript
 
@@ -40,6 +41,7 @@ class AVk:
         self.events = {}
 
         self.longpoll = ALongPoll(self)
+        self.uploader = AUploader(self)
 
     async def _log(self, logtype, message):
         """

@@ -1,19 +1,36 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
 
+from json import loads
 
-class Uploader:
+
+class AUploader:
     def __init__(self, vk):
-        """Initializes new Uploader object.
-
-        Arguments:
-            vk {Vk}
-        """
         self.session = vk.session
         self.call_method = vk.call_method
 
-    def album_photo(self, files, album_id,
-                    group_id=None, caption=""):
+    async def _upload_files(self, data, files, method):
+        upload_url = await self.call_method(method, data)
+        uplfiles = {}
+
+        if isinstance(files, str):
+            files = [files]
+
+        if len(files) > 1:
+            for index, file in enumerate(files):
+                uplfiles["file%d" % (index+1)] = open(file, "rb")
+        else:
+            uplfiles["file"] = open(files[0], "rb")
+        response = await self.session.post(
+            upload_url["response"]["upload_url"],
+            data=uplfiles
+        )
+        response = await response.text()
+
+        return loads(response)
+
+    async def album_photo(self, files, album_id,
+                          group_id=None, caption=""):
         """upload photo in album
 
         Arguments:
@@ -33,16 +50,16 @@ class Uploader:
         if group_id:
             data["group_id"] = group_id
 
-        response = self._upload_files(data, files, "photos.getUploadServer")
+        response = await self._upload_files(data, files, "photos.getUploadServer")
 
         data["caption"] = caption
         data["server"] = response["server"]
         data["hash"] = response["hash"]
         data["photos_list"] = response["photos_list"]
 
-        return self.call_method("photos.save", data)
+        return await self.call_method("photos.save", data)
 
-    def audio(self, files, artist="", title=""):
+    async def audio(self, files, artist="", title=""):
         """Upload audio file
 
         Arguments:
@@ -55,17 +72,17 @@ class Uploader:
         Returns:
             dict -- response after audio saved
         """
-        response = self._upload_files({}, files, "audio.getUploadServer")
+        response = await self._upload_files({}, files, "audio.getUploadServer")
         data = {
             "server": response["server"],
             "audio": response["audio"],
             "hash": response["hash"]
         }
 
-        return self.call_method("audio.save", data)
+        return await self.call_method("audio.save", data)
 
-    def chat_photo(self, files, chat_id, crop_x=None,
-                   crop_y=None, crop_width=None):
+    async def chat_photo(self, files, chat_id, crop_x=None,
+                         crop_y=None, crop_width=None):
         """upload chat photo
 
         Arguments:
@@ -88,13 +105,14 @@ class Uploader:
         if crop_width:
             data["crop_width"] = crop_width
 
-        response = self._upload_files(data, files, "photos.getChatUploadServer")
+        response = await self._upload_files(data, files, "photos.getChatUploadServer")
 
         data = {"file": response["response"]}
 
-        return self.call_method("messages.setChatPhoto", data)
+        return await self.call_method("messages.setChatPhoto", data)
 
-    def cover_photo(self, files, group_id, crop_x=0, crop_y=0, crop_x2=795, crop_y2=200):
+    async def cover_photo(self, files, group_id, crop_x=0,
+                          crop_y=0, crop_x2=795, crop_y2=200):
         """update group cover photo
 
         Arguments:
@@ -118,15 +136,20 @@ class Uploader:
             "crop_y2": crop_y2
         }
 
-        response = self._upload_files(data, files, "photos.getOwnerCoverPhotoUploadServer")
+        response = await self._upload_files(
+            data, files, "photos.getOwnerCoverPhotoUploadServer"
+        )
         data = {
             "hash": response["hash"],
             "photo": response["photo"]
         }
 
-        return self.call_method("photos.saveOwnerCoverPhoto", data)
+        return await self.call_method(
+            "photos.saveOwnerCoverPhoto", data
+        )
 
-    def document(self, files, group_id=None, title="", tags="", return_tags=0, is_wall=False):
+    async def document(self, files, group_id=None, title="",
+                       tags="", return_tags=0, is_wall=False):
         """upload document
 
         Arguments:
@@ -146,7 +169,7 @@ class Uploader:
         if group_id:
             data["group_id"] = group_id
 
-        response = self._upload_files(
+        response = await self._upload_files(
             data, files,
             "docs.get%sUploadServer" % ("Wall" if is_wall else "")
         )
@@ -157,10 +180,10 @@ class Uploader:
             "return_tags": return_tags
         }
 
-        return self.call_method("docs.save", data)
+        return await self.call_method("docs.save", data)
 
-    def document_message(self, files, peer_id, doc_type="doc", title="",
-                         tags="", return_tags=0):
+    async def document_message(self, files, peer_id, doc_type="doc", title="",
+                               tags="", return_tags=0):
         """Uploads document in message.
 
         Arguments:
@@ -181,7 +204,7 @@ class Uploader:
             "type": doc_type
         }
 
-        response = self._upload_files(
+        response = await self._upload_files(
             data, files, "docs.getMessagesUploadServer"
         )
         data = {
@@ -191,7 +214,7 @@ class Uploader:
             "return_tags": return_tags
         }
 
-        return self.call_method("docs.save", data)
+        return await self.call_method("docs.save", data)
 
     @staticmethod
     def format(response, formtype="photo"):
@@ -218,7 +241,7 @@ class Uploader:
                     objs.append("%s%s_%s" % (formtype, obj["owner_id"], obj["id"]))
             return ",".join(objs)
 
-    def message_photo(self, files, peer_id):
+    async def message_photo(self, files, peer_id):
         """upload photo in message
 
         Arguments:
@@ -230,17 +253,17 @@ class Uploader:
         """
         data = {"peer_id": peer_id}
 
-        response = self._upload_files(
+        response = await self._upload_files(
             data, files, "photos.getMessagesUploadServer")
 
         data["server"] = response["server"]
         data["hash"] = response["hash"]
         data["photo"] = response["photo"]
 
-        return self.call_method("photos.saveMessagesPhoto", data)
+        return await self.call_method("photos.saveMessagesPhoto", data)
 
-    def market_photo(self, files, group_id, main_photo=None,
-                     crop_x=None, crop_y=None, crop_width=None):
+    async def market_photo(self, files, group_id, main_photo=None,
+                           crop_x=None, crop_y=None, crop_width=None):
         """upload product photo
 
         Allowed formats: JPG, PNG, GIF.
@@ -272,7 +295,7 @@ class Uploader:
         if main_photo:
             data["main_photo"] = main_photo
 
-        response = self._upload_files(data, files, "photos.getMarketUploadServer")
+        response = await self._upload_files(data, files, "photos.getMarketUploadServer")
 
         data = {"group_id": group_id}
         data["server"] = response["server"]
@@ -281,9 +304,9 @@ class Uploader:
         data["crop_data"] = response["crop_data"]
         data["crop_hash"] = response["crop_hash"]
 
-        return self.call_method("photos.saveMarketPhoto", data)
+        return await self.call_method("photos.saveMarketPhoto", data)
 
-    def market_album_photo(self, files, group_id):
+    async def market_album_photo(self, files, group_id):
         """Uploading photos for a selection of goods
 
         Allowed formats: JPG, PNG, GIF.
@@ -300,15 +323,15 @@ class Uploader:
         """
         data = {"group_id": group_id}
 
-        response = self._upload_files(data, files, "photos.getMarketAlbumUploadServer")
+        response = await self._upload_files(data, files, "photos.getMarketAlbumUploadServer")
 
         data["server"] = response["server"]
         data["hash"] = response["hash"]
         data["photo"] = response["photo"]
 
-        return self.call_method("photos.saveMarketAlbumPhoto", data)
+        return await self.call_method("photos.saveMarketAlbumPhoto", data)
 
-    def profile_photo(self, files, owner_id=None):
+    async def profile_photo(self, files, owner_id=None):
         """update profile photo
 
         Arguments:
@@ -324,18 +347,18 @@ class Uploader:
         if owner_id:
             data["owner_id"] = owner_id
 
-        response = self._upload_files(data, files, "photos.getOwnerPhotoUploadServer")
+        response = await self._upload_files(data, files, "photos.getOwnerPhotoUploadServer")
         del data["owner_id"]
 
         data["server"] = response["server"]
         data["hash"] = response["hash"]
         data["photo"] = response["photo"]
 
-        return self.call_method("photos.saveOwnerPhoto", data)
+        return await self.call_method("photos.saveOwnerPhoto", data)
 
-    def video(self, files, album_id, name="", description="", is_private=0,
-              wallpost=0, link="", group_id=0, privacy_view="", privacy_comment="",
-              no_comments=0, repeat=0, compression=0):
+    async def video(self, files, album_id, name="", description="", is_private=0,
+                    wallpost=0, link="", group_id=0, privacy_view="", privacy_comment="",
+                    no_comments=0, repeat=0, compression=0):
         """upload video
 
         Arguments:
@@ -374,39 +397,24 @@ class Uploader:
         if group_id:
             data["group_id"] = group_id
 
-        upload_url = self.call_method(
-            "video.save", data)["response"]["upload_url"]
+        upload_url = await self.call_method("video.save", data)
         response = []
 
         if isinstance(files, str):
             files = [files]
 
         for _, file in enumerate(files):
-            response.append(
-                self.session.post(
-                    upload_url, files={"file": open(file, "rb")}
-                ).json()
+            timed = await self.session.post(
+                upload_url["response"]["upload_url"],
+                files={"file": open(file, "rb")}
             )
+            timed = loads(await timed.text())
+            response.append(timed)
 
         return response
 
-    def _upload_files(self, data, files, method):
-        upload_url = self.call_method(method, data)["response"]["upload_url"]
-        uplfiles = {}
-
-        if isinstance(files, str):
-            files = [files]
-
-        if len(files) > 1:
-            for index, file in enumerate(files):
-                uplfiles["file%d" % (index+1)] = open(file, "rb")
-        else:
-            uplfiles["file"] = open(files[0], "rb")
-
-        return self.session.post(upload_url, files=uplfiles).json()
-
-    def wall_photo(self, files, group_id=None,
-                   user_id=None, caption=""):
+    async def wall_photo(self, files, group_id=None,
+                         user_id=None, caption=""):
         """upload photo in wall post
 
         Arguments:
@@ -424,7 +432,7 @@ class Uploader:
         if group_id:
             data["group_id"] = group_id
 
-        response = self._upload_files(data, files, "photos.getWallUploadServer")
+        response = await self._upload_files(data, files, "photos.getWallUploadServer")
 
         if user_id:
             data["user_id"] = user_id
@@ -433,4 +441,4 @@ class Uploader:
         data["hash"] = response["hash"]
         data["photo"] = response["photo"]
 
-        return self.call_method("photos.saveWallPhoto", data)
+        return await self.call_method("photos.saveWallPhoto", data)
