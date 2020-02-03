@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
 
+from requests import Session
 from regex import findall
 from bs4 import BeautifulSoup
 
 
 class VkAuthManager:
-    def __init__(self, vk):
+    def __init__(self):
         """Class for get token via login and password.
 
         Arguments:
             vk {Vk} -- VK object.
         """
-        self.session = vk.session
+        self.session = Session()
         self.browser = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
