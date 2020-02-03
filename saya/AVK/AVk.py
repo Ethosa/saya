@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
-from logging import getLogger, StreamHandler, Formatter
+from time import ctime as current_time
 
 from aiohttp import ClientSession
 
 from .ALongPoll import ALongPoll
 from ..VK.VkAuthManager import VkAuthManager
+from ..VK.VkScript import VkScript
 
 
 class AVk:
@@ -33,34 +34,24 @@ class AVk:
         self.v = api
         self.token = token
         self.group_id = group_id
+        self.debug = debug
 
         self.method = ""
-        self.current_method = ""
         self.events = {}
 
-        # Debug settings.
-        self.debug = 50
-        if debug:
-            if isinstance(debug, int):
-                self.debug = debug
-            else:
-                self.debug = 10
-
-        # Logger initialize.
-        self.logger = getLogger("saya")
-        self.logger.setLevel(self.debug)
-        handler = StreamHandler()
-        handler.setFormatter(
-            Formatter("[%(levelname)s] %(name)s: %(asctime)s — %(message)s")
-        )
-
         self.longpoll = ALongPoll(self)
+
+    async def _log(self, logtype, message):
+        if self.debug:
+            print("[%s] at %s -- %s" % (
+                logtype, current_time(), message)
+            )
 
     async def _wrapper(self, **kwargs):
         """
         Provides convenient usage VK API.
         """
-        return await self.call_method(self.current_method, kwargs)
+        return await self.call_method(self.method, kwargs)
 
     async def call_method(self, method, data={}):
         """
@@ -76,6 +67,7 @@ class AVk:
         Returns:
             dict -- response after calling method
         """
+        self.method = ""
         data["v"] = self.v
         data["access_token"] = self.token
         response = await self.session.post(
@@ -85,24 +77,51 @@ class AVk:
 
         # Logging.
         if "error" in response:
-            self.logger.error('Error [%s] in called method "%s": %s' % (
+            await self._log("ERROR", 'Error [%s] in called method "%s": %s' % (
                     response["error"]["error_code"], method,
                     response["error"]["error_msg"]
                 )
             )
         else:
-            self.logger.debug('Successfully called method "%s"' % (method))
+            await self._log("DEBUG", 'Successfully called method "%s"' % (method))
         return response
+
+    async def execute(self, code):
+        """
+        Calls an execute VK API method
+
+        Arguments:
+            code {str} -- VKScript code.
+
+        Returns:
+            dict -- response
+        """
+        return await self.call_method("execute", {"code": code})
+
+    async def pyexecute(self, code):
+        """
+        Calls an execute VK API method
+
+        Arguments:
+            code {str} -- Python code.
+
+        Returns:
+            dict -- response
+        """
+        return await self.execute(VkScript().translate(code))
 
     async def start_listen(self):
         """
         Starts receiving events from the server.
         """
         async for event in self.longpoll.listen(True):
-            if event["type"] in self.events:
-                await self.events[event["type"]](event)
-            elif event["type"] in dir(self):
-                await getattr(self, event["type"])(event)
+            if "type" in event:
+                if event["type"] in self.events:
+                    await self.events[event["type"]](event)
+                elif event["type"] in dir(self):
+                    await getattr(self, event["type"])(event)
+            else:
+                self._log("WARNING", "Unknown event passed: %s" % (event))
 
     def __getattr__(self, attr):
         """
@@ -123,9 +142,7 @@ class AVk:
                 return call
             return _decorator
         elif self.method:
-            method = "%s.%s" % (self.method, attr)
-            self.method = ""
-            self.current_method = method
+            self.method = "%s.%s" % (self.method, attr)
             return self._wrapper
         else:
             self.method = attr

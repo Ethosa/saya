@@ -12,7 +12,8 @@ class ALongPoll:
             vk {Vk} -- authed VK object
         """
         self.v = vk.v
-        self.logger = vk.logger
+        self._log = vk._log
+        self.debug = vk.debug
         self.session = vk.session
 
         self.data = {
@@ -59,7 +60,7 @@ class ALongPoll:
         # Get server info and check it.
         server, ts, key = await self._get_server()
 
-        self.logger.info("LongPoll launched")
+        await self._log("INFO", "LongPoll launched")
 
         # Start listening.
         while 1:
