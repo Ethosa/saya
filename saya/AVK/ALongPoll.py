@@ -47,6 +47,13 @@ class ALongPoll:
             raise ValueError("Invalid authentication.")
         return response["server"], response["ts"], response["key"]
 
+    async def _get_server_response(self, server, ts, key):
+        """
+        Returns server response after calling.
+        """
+        response = await self.session.get(self.for_server % (server, key, ts))
+        return await response.json()
+
     async def listen(self, ev=False):
         """
         Starts listening.
@@ -64,12 +71,10 @@ class ALongPoll:
 
         # Start listening.
         while 1:
-            response = await self.session.get(self.for_server % (server, key, ts))
-            response = await response.json()
+            response = await self._get_server_response(server, ts, key)
             if "ts" not in response or "updates" not in response:
                 server, ts, key = await self._get_server()
-                response = await self.session.get(self.for_server % (server, key, ts))
-                response = await response.json()
+                response = await self._get_server_response(server, ts, key)
             ts = response["ts"]
 
             for update in response["updates"]:

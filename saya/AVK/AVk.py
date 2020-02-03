@@ -42,6 +42,9 @@ class AVk:
         self.longpoll = ALongPoll(self)
 
     async def _log(self, logtype, message):
+        """
+        Outputs log messages.
+        """
         if self.debug:
             print("[%s] at %s -- %s" % (
                 logtype, current_time(), message)

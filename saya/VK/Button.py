@@ -2,24 +2,18 @@
 # author: Ethosa
 
 
-class Button(dict):
-    PRIMARY = "primary"
-    SECONDARY = "secondary"
-    POSITIVE = "positive"
-    NEGATIVE = "negative"
+def create_button(button_type="text", color="primary", **kwargs):
+    """
+    Creates a new Button object.
 
-    def __init__(self, btype="text", color="primary", **kwargs):
-        """
-        Creates a new Button object.
-
-        Keyword Arguments:
-            btype {str} -- button type. (default: {"text"})
-            color {str} -- button color. (default: {"primary"})
-        """
-        if btype == "text":
-            self["color"] = color
-        self["action"] = kwargs
-        self["action"]["type"] = btype
-
-    def set_color(self, color="primary"):
-        self["color"] = color
+    Keyword Arguments:
+        button_type {str} -- button type. (default: {"text"})
+        color {str} -- button color. (default: {"primary"})
+            Can be "primary", "secondary", "positive" or "negative".
+    """
+    obj = {}
+    if button_type == "text":
+        obj["color"] = color
+    obj["action"] = kwargs
+    obj["action"]["type"] = button_type
+    return obj
