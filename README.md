@@ -18,6 +18,7 @@ from saya import Vk
 ```
 
 ## Currently available
+-   sync, async and multithreading.
 -   calling any method from VK Api.
 -   convenient interaction with Longpoll.
 -   convenient work with keyboards.
