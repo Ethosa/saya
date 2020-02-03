@@ -33,7 +33,7 @@ class Vk(object):
 
         # Parses vk.com, if login and password are not empty.
         if login and password:
-            self.auth = VkAuthManager(self)
+            self.auth = VkAuthManager()
             self.auth.login(login, password)
             token = self.auth.get_token()
 
