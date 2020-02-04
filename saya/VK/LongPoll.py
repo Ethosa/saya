@@ -2,7 +2,7 @@
 # author: Ethosa
 from time import sleep
 
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError as CError
 
 from .Event import event
 
@@ -46,12 +46,11 @@ class LongPoll:
         """
         try:
             response = self.session.get(self.method, params=self.data).json()
-        except ConnectionError:
+        except CError:
             sleep(.5)
             self._get_server()
         if "response" in response:
             response = response["response"]
-            print(response)
         else:
             raise ValueError("Invalid authentication.")
         self.server = response["server"]
@@ -73,7 +72,7 @@ class LongPoll:
                 self._get_server()
                 response = self._get_events()
             return response
-        except ConnectionError:
+        except CError:
             sleep(.5)
             return self._get_events()
 
