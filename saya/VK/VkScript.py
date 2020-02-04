@@ -17,6 +17,8 @@ class VkScript(Translator):
         rules.extend(VkScript.RULES)
         Translator.__init__(self, codeString, rules, useRegex, debug)
 
+    MAX_COUNT = 12
+
     RULES = [
         # # ...
         # // ...
@@ -28,7 +30,7 @@ class VkScript(Translator):
         # API.messages.send("message": "hello saya", "peer_id": 123123, ...)
         ((r"API\.([\S ]+)\(([\S\s]*?)(\b[a-zA-Z0-9_]+\b)[ ]*={1}[ ]*([^,]+)([\S\s]*?)\)"),
          (r'API.\1(\2"\3": \4\5)'),
-         None, 70),
+         None, MAX_COUNT),
 
         # API.messages.send("message": "hello saya", "peer_id": 123123, ...)
         # API.messages.send({"message": "hello saya", "peer_id": 123123, ...})
@@ -53,7 +55,7 @@ class VkScript(Translator):
           r"(?P<body>[\r\n]+(?P<block_indent>(?P=indent)[ ]*)"
           r"[^\r\n]+[\r\n]+((?P=block_indent)[^\r\n]+[\r\n]+)*)"),
          (r"\g<enter>\g<indent>\g<block> (\g<block_info>){\g<body>\g<indent>}\n"),
-         None, 70),
+         None, MAX_COUNT),
 
         # else :
         #     ...
@@ -66,7 +68,7 @@ class VkScript(Translator):
           r"(?P<body>[\r\n]+(?P<block_indent>(?P=indent)[ ]*)"
           r"[^\r\n]+[\r\n]+((?P=block_indent)[^\r\n]+[\r\n]+)*)"),
          (r"\g<enter>\g<indent>else\g<block_info>{\g<body>\g<indent>}\n"),
-         None, 70),
+         None, MAX_COUNT),
 
         # len(array)
         # array.length
@@ -90,7 +92,7 @@ class VkScript(Translator):
           r"\g<indent>while (\g<var> < \g<end>){"
           r"\g<body>\g<block_indent>\g<var> += 1;\n"
           r"\g<indent>}\n"),
-         None, 70),
+         None, MAX_COUNT),
 
         # for i in range(1, 10):
         #   ...
@@ -108,7 +110,7 @@ class VkScript(Translator):
           r"\g<indent>while (\g<var> < \g<end>){"
           r"\g<body>\g<block_indent>\g<var> += 1;\n"
           r"\g<indent>}\n"),
-         None, 70),
+         None, MAX_COUNT),
 
         # for i in range(0, 10, 2):
         #   ...
@@ -127,7 +129,7 @@ class VkScript(Translator):
           r"\g<indent>while (\g<var> < \g<end>){"
           r"\g<body>\g<block_indent>\g<var> += \g<step>;\n"
           r"\g<indent>}\n"),
-         None, 70),
+         None, MAX_COUNT),
 
         # for index, obj in enumerate(array):
         #   ...
@@ -147,7 +149,7 @@ class VkScript(Translator):
           r"\n\g<block_indent>var \g<obj> = \g<array>[\g<index>]"
           r"\g<body>\g<block_indent>\g<index> += 1;\n"
           r"\g<indent>}\n"),
-         None, 70),
+         None, MAX_COUNT),
 
         # for i in iterable_object:
         #   ...
@@ -167,7 +169,7 @@ class VkScript(Translator):
           r"\n\g<block_indent>var \g<var> = \g<array>[_\g<var>_index]"
           r"\g<body>\g<block_indent>_\g<var>_index += 1;\n"
           r"\g<indent>}\n"),
-         None, 70),
+         None, MAX_COUNT),
 
         # def smth():
         #    ...
@@ -181,7 +183,7 @@ class VkScript(Translator):
           r"[\r\n]+(?P=block_indent)return[ ]*(?P<return>[^\r\n]+)"),
          (r"\g<enter>\g<indent>def \g<defname>\g<definfo>:"
           r"\n\g<body>\n\g<block_indent>\g<return>"),
-         None, 70),
+         None, MAX_COUNT),
 
         # def smth():
         #    ...
@@ -196,7 +198,7 @@ class VkScript(Translator):
          (r"\g<enter>\g<indent>def \g<defname>():"
           r"\n\g<body>\n\g<block_indent>\g<return>"
           r"\g<other>\g<body>\g<line>\g<return>"),
-         None, 70),
+         None, MAX_COUNT),
 
         # pass
         #
@@ -265,7 +267,7 @@ class VkScript(Translator):
         # 1000000
         ((r"(\d+)_+(\d+)"),
          (r"\1\2"),
-         None, 100),
+         None, MAX_COUNT*2),
 
         # int("1")
         # parseInt("1")

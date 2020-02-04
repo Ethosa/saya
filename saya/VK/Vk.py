@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
 from logging import getLogger, StreamHandler, Formatter
-from inspect import getsource
 
-from regex import findall, sub, split
 from requests import Session
 
 from .LongPoll import LongPoll
@@ -12,7 +10,6 @@ from .Uploader import Uploader
 from .VkScript import VkScript
 
 from ..StartThread import StartThread
-from ..Deprecated import deprecated
 
 
 class Vk(object):
@@ -117,43 +114,6 @@ class Vk(object):
             dict -- response
         """
         return self.execute(VkScript().translate(code))
-
-    @deprecated("0.1.81", "0.2.0")
-    def to_execute(self, func):
-        """Converts function code to the VKScript code.
-
-        When you call a function using the to_execute decorator, you call its VKScript version.
-
-        Arguments:
-            func {function} -- callable object.
-
-        Returns:
-            func
-        """
-        source = getsource(func)
-        source_code = "\n\n%s\n\n" % (source)
-        obj = findall(r"\A@([^\.]+)", source)[0]
-        args = findall(
-            r"\A[\S\s]+?def[ ]*[\S ]+?\(([^\)]*)\):",
-            source
-        )
-        if args:
-            args = split(r"\s*,\s*", args[0])
-
-        source = sub(r"\A[\S\s]+?:\n[ ]+", r"", source)
-        source = sub("%s" % obj, "API", source)
-
-        def _execute(*arguments):
-            code = source_code
-            for arg, argument in zip(args, arguments):
-                code = sub(
-                    r"([\r\n]+[^\"]+)\b" + arg + r"\b",
-                    r"\1" + repr(argument),
-                    code)
-            code = VkScript().translate(code)
-            self.logger.debug(code)
-            return self.execute(code)
-        return _execute
 
     def start_listen(self):
         """

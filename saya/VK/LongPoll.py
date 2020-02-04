@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
+from time import sleep
+
+from requests.exceptions import ConnectionError
 
 from .Event import event
-from ..Deprecated import deprecated
 
 
 class LongPoll:
@@ -15,6 +17,9 @@ class LongPoll:
         self.v = vk.v
         self.logger = vk.logger
         self.session = vk.session
+        self.ts = None
+        self.server = None
+        self.key = None
 
         self.data = {
             "access_token": vk.token,
@@ -39,12 +44,38 @@ class LongPoll:
         Raises:
             ValueError -- Invalid authentication.
         """
-        response = self.session.get(self.method, params=self.data).json()
+        try:
+            response = self.session.get(self.method, params=self.data).json()
+        except ConnectionError:
+            sleep(.5)
+            self._get_server()
         if "response" in response:
             response = response["response"]
+            print(response)
         else:
             raise ValueError("Invalid authentication.")
-        return response["server"], response["ts"], response["key"]
+        self.server = response["server"]
+        self.ts = response["ts"]
+        self.key = response["key"]
+
+    def _get_events(self):
+        """
+        Gets server events.
+
+        Returns:
+            dict -- server response.
+        """
+        try:
+            response = self.session.get(
+                self.for_server % (self.server, self.key, self.ts)
+            ).json()
+            while "ts" not in response or "updates" not in response:
+                self._get_server()
+                response = self._get_events()
+            return response
+        except ConnectionError:
+            sleep(.5)
+            return self._get_events()
 
     def listen(self, ev=False):
         """
@@ -57,17 +88,14 @@ class LongPoll:
             {dict} -- new event
         """
         # Get server info and check it.
-        server, ts, key = self._get_server()
+        self._get_server()
 
         self.logger.info("LongPoll launched")
 
         # Start listening.
         while 1:
-            response = self.session.get(self.for_server % (server, key, ts)).json()
-            if "ts" not in response or "updates" not in response:
-                server, ts, key = self._get_server()
-                response = self.session.get(self.for_server % (server, key, ts)).json()
-            ts = response["ts"]
+            response = self._get_events()
+            self.ts = response["ts"]
 
             for update in response["updates"]:
                 if update:
@@ -75,11 +103,3 @@ class LongPoll:
                         yield event(update)
                     else:
                         yield update
-
-    @deprecated("0.1.52", "0.2.0")
-    def on_listen_end(self, call):
-        pass
-
-    @deprecated("0.1.52", "0.2.0")
-    def push(self, ev):
-        pass

@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
+from asyncio import sleep
+
+from aiohttp.client_exceptions import ClientOSError
 
 from ..VK.Event import event
 
@@ -15,6 +18,9 @@ class ALongPoll:
         self._log = vk._log
         self.debug = vk.debug
         self.session = vk.session
+        self.ts = None
+        self.server = None
+        self.key = None
 
         self.data = {
             "access_token": vk.token,
@@ -33,26 +39,39 @@ class ALongPoll:
         """
         Returns server, ts and key.
 
-        Returns:
-            {str}, {str}, {str} -- server, ts and key
-
         Raises:
             ValueError -- Invalid authentication.
         """
-        response = await self.session.get(self.method, params=self.data)
-        response = await response.json()
+        try:
+            response = await self.session.get(self.method, params=self.data)
+            response = await response.json()
+        except ClientOSError:
+            await sleep(.5)
+            await self._get_server()
         if "response" in response:
             response = response["response"]
         else:
             raise ValueError("Invalid authentication.")
-        return response["server"], response["ts"], response["key"]
+        self.server = response["server"]
+        self.ts = response["ts"]
+        self.key = response["key"]
 
-    async def _get_server_response(self, server, ts, key):
+    async def _get_events(self):
         """
         Returns server response after calling.
         """
-        response = await self.session.get(self.for_server % (server, key, ts))
-        return await response.json()
+        try:
+            response = await self.session.get(
+                self.for_server % (self.server, self.key, self.ts)
+            )
+            response = await response.json()
+            if "ts" not in response or "updates" not in response:
+                await self._get_server()
+                response = await self._get_events()
+            return response
+        except ClientOSError:
+            await sleep(.5)
+            return await self._get_events()
 
     async def listen(self, ev=False):
         """
@@ -65,17 +84,14 @@ class ALongPoll:
             {dict} -- new event
         """
         # Get server info and check it.
-        server, ts, key = await self._get_server()
+        await self._get_server()
 
         await self._log("INFO", "LongPoll launched")
 
         # Start listening.
         while 1:
-            response = await self._get_server_response(server, ts, key)
-            if "ts" not in response or "updates" not in response:
-                server, ts, key = await self._get_server()
-                response = await self._get_server_response(server, ts, key)
-            ts = response["ts"]
+            response = await self._get_events()
+            self.ts = response["ts"]
 
             for update in response["updates"]:
                 if update:
