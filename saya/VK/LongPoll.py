@@ -47,7 +47,7 @@ class LongPoll:
         try:
             response = self.session.get(self.method, params=self.data).json()
         except CError:
-            sleep(.5)
+            sleep(.2)
             self._get_server()
         if "response" in response:
             response = response["response"]
@@ -73,7 +73,7 @@ class LongPoll:
                 response = self._get_events()
             return response
         except CError:
-            sleep(.5)
+            sleep(.2)
             return self._get_events()
 
     def listen(self, ev=False):

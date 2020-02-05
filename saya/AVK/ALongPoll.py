@@ -46,7 +46,7 @@ class ALongPoll:
             response = await self.session.get(self.method, params=self.data)
             response = await response.json()
         except ClientOSError:
-            await sleep(.5)
+            await sleep(.2)
             await self._get_server()
         if "response" in response:
             response = response["response"]
@@ -70,7 +70,7 @@ class ALongPoll:
                 response = await self._get_events()
             return response
         except ClientOSError:
-            await sleep(.5)
+            await sleep(.2)
             return await self._get_events()
 
     async def listen(self, ev=False):
