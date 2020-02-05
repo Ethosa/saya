@@ -60,6 +60,7 @@ class Vk(object):
 
         self.uploader = Uploader(self)
         self.longpoll = LongPoll(self)
+        self.vks = VkScript()  # for pyexecute method.
 
     def call_method(self, method, data={}):
         """call to any method in VK api
@@ -113,7 +114,7 @@ class Vk(object):
         Returns:
             dict -- response
         """
-        return self.execute(VkScript().translate(code))
+        return self.execute(self.vks.translate(code))
 
     def start_listen(self):
         """

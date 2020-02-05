@@ -42,6 +42,7 @@ class AVk:
 
         self.longpoll = ALongPoll(self)
         self.uploader = AUploader(self)
+        self.vks = VkScript()  # for pyexecute method.
 
     async def _log(self, logtype, message):
         """
@@ -113,7 +114,8 @@ class AVk:
         Returns:
             dict -- response
         """
-        return await self.execute(VkScript().translate(code))
+        code = await self.vks.atranslate(code)
+        return await self.execute(code)
 
     async def start_listen(self):
         """
