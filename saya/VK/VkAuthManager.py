@@ -8,15 +8,16 @@ from bs4 import BeautifulSoup
 
 class VkAuthManager:
     def __init__(self):
-        """Class for get token via login and password.
-
-        Arguments:
-            vk {Vk} -- VK object.
+        """
+        Class for get token via login and password.
         """
         self.session = Session()
         self.browser = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'User-Agent': ('Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+                           ' AppleWebKit/537.36 (KHTML, like Gecko) C'
+                           'hrome/61.0.3163.100 Safari/537.36'),
+            'Accept': ('text/html,application/xhtml+xml,'
+                       'application/xml;q=0.9,*/*;q=0.8'),
             'Accept-Language': 'ru-ru,ru;q=0.8,en-us;q=0.5,en;q=0.3',
             'Accept-Encoding': 'gzip, deflate',
             'Connection': 'keep-alive',
@@ -33,13 +34,13 @@ class VkAuthManager:
         lg_h = parser.find("input", {"name": "lg_h"})
         ip_h = parser.find("input", {"name": "ip_h"})
 
-        form = {'act': 'login', 'role': 'al_frame', 'expire': '',
-                'recaptcha': '', 'captcha_sid': '', 'captcha_key': '',
-                '_origin': 'https://vk.com', 'ip_h': ip_h["value"],
-                'lg_h': lg_h["value"], 'ul': '',
+        form = {'act': 'login', 'role': 'al_frame',
+                '_origin': 'https://vk.com',
+                'lg_h': lg_h["value"], 'ip_h': ip_h["value"],
                 'email': email, 'pass': password}
 
-        response = self.session.post("https://login.vk.com/", headers=self.browser, data=form)
+        response = self.session.post("https://login.vk.com/",
+                                     headers=self.browser, data=form)
         if 'onLoginDone' in response.text:
             self.auth_page = response.text
         else:
