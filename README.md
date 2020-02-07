@@ -18,11 +18,12 @@ from saya import Vk
 ```
 
 ## Currently available
--   sync, async and multithreading.
--   calling any method from VK Api.
--   convenient interaction with Longpoll.
--   convenient work with keyboards.
--   translator Python code in the code on the VK Script (Beta). You can read more about it [here](https://github.com/Ethosa/saya/wiki/VkScript#now-support)
+-   Sync, async and multithreading.
+-   Calling any method from VK Api.
+-   Convenient interaction with Longpoll.
+-   Convenient work with keyboards.
+-   Working with Streaming API (sync/async).
+-   Translator Python code in the code on the VK Script (Beta). You can read more about it [here](https://github.com/Ethosa/saya/wiki/VkScript#now-support)
 
 ## FAQ
 *Q*: Where can I learn this?  
