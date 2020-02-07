@@ -2,10 +2,10 @@
 # author: Ethosa
 from json import loads
 
-from websocket import create_connection
+from aiohttp.client_exceptions import WSServerHandshakeError
 
 
-class StreamingAPI:
+class AStreamingAPI:
     def __init__(self, vk):
         """Initialize StreamingAPI object.
 
@@ -18,7 +18,7 @@ class StreamingAPI:
 
         self.url = ""
 
-    def add_rule(self, tag, value):
+    async def add_rule(self, tag, value):
         """Adds a new rule in the stream.
 
         Use this method to add a new rule to the stream.
@@ -33,13 +33,14 @@ class StreamingAPI:
                 "tag": tag
             }
         }
-        return self.session.post(
+        response = await self.session.post(
             self.url,
             json=obj,
             headers={"Content-Type": "application/json"}
-        ).json()
+        )
+        return await response.json()
 
-    def auth(self):
+    async def auth(self):
         """Logging into the Streaming API.
 
         Raises:
@@ -48,7 +49,7 @@ class StreamingAPI:
         Returns:
             dict -- result code.
         """
-        response = self.call_method("streaming.getServerUrl")
+        response = await self.call_method("streaming.getServerUrl")
         if "response" in response:
             self.url = "https://%s/rules?key=%s" % (
                 response["response"]["endpoint"],
@@ -59,7 +60,7 @@ class StreamingAPI:
         else:
             raise ValueError("%s" % response)
 
-    def delete_rule(self, tag):
+    async def delete_rule(self, tag):
         """Removes the rule from the stream.
 
         Use this method to remove a rule from a stream.
@@ -70,13 +71,14 @@ class StreamingAPI:
         Returns:
             dict -- result code.
         """
-        return self.session.delete(
+        response = await self.session.delete(
             self.url,
             json={"tag": tag},
             headers={"Content-Type": "application/json"}
-        ).json()
+        )
+        return await response.json()
 
-    def get_rules(self):
+    async def get_rules(self):
         """Gets the current rules from the stream.
 
         Use this method to get rules that are already added to the stream.
@@ -84,26 +86,27 @@ class StreamingAPI:
         Returns:
             dict -- rules.
         """
-        return self.session.get(self.url).json()
+        response = await self.session.get(self.url)
+        return await response.json()
 
-    def listen(self):
+    async def listen(self):
         """Starts websocket listen
 
         Yields:
             dict -- event
         """
+        headers = [
+            ("Content-Type", "application/json"),
+            ("Connection", "upgrade"),
+            ("Upgrade", "websocket"),
+            ("Sec-Websocket-Version", "13"),
+        ]
+        url = "wss://%s/stream?key=%s" % (self.endpoint, self.key)
         while 1:
-            ws = create_connection(
-                "wss://%s/stream?key=%s" % (
-                    self.endpoint, self.key
-                ),
-                header=[
-                    "Content-Type: application/json"
-                    "Connection: upgrade",
-                    "Upgrade: websocket",
-                    "Sec-Websocket-Version: 13",
-                ]
-            )
-            result = ws.recv()
-            ws.close()
-            yield loads(result)
+            try:
+                response = await self.session.ws_connect(url, headers=headers)
+            except WSServerHandshakeError:
+                continue
+            data = await response.receive()
+            yield loads(data.data)
+            await response.close()

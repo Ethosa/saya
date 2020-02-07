@@ -212,8 +212,8 @@ class VkScript(Translator):
 
         # elif
         # else if
-        ((r"([\r\n]+)([ ]*)elif"),
-         (r"\1\2else if"),
+        ((r"([\r\n]+[ ]*)elif"),
+         (r"\1else if"),
          None, 0),
 
         # a = 0

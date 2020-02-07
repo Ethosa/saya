@@ -4,7 +4,8 @@
 from .AVk import AVk
 from .ALongPoll import ALongPoll
 from .AUploader import AUploader
+from .AStreamingAPI import AStreamingAPI
 
 
 if __name__ == '__main__':
-    print(AVk, ALongPoll, AUploader)
+    print(AVk, ALongPoll, AUploader, AStreamingAPI)
