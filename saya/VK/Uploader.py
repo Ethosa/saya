@@ -88,7 +88,8 @@ class Uploader:
         if crop_width:
             data["crop_width"] = crop_width
 
-        response = self._upload_files(data, files, "photos.getChatUploadServer")
+        response = self._upload_files(
+            data, files, "photos.getChatUploadServer")
 
         data = {"file": response["response"]}
 
@@ -118,7 +119,8 @@ class Uploader:
             "crop_y2": crop_y2
         }
 
-        response = self._upload_files(data, files, "photos.getOwnerCoverPhotoUploadServer")
+        response = self._upload_files(
+            data, files, "photos.getOwnerCoverPhotoUploadServer")
         data = {
             "hash": response["hash"],
             "photo": response["photo"]
@@ -126,7 +128,8 @@ class Uploader:
 
         return self.call_method("photos.saveOwnerCoverPhoto", data)
 
-    def document(self, files, group_id=None, title="", tags="", return_tags=0, is_wall=False):
+    def document(self, files, group_id=None, title="",
+                 tags="", return_tags=0, is_wall=False):
         """upload document
 
         Arguments:
