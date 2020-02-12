@@ -52,6 +52,7 @@ class LongPoll:
         if "response" in response:
             response = response["response"]
         else:
+            self.logger.error(response)
             raise ValueError("Invalid authentication.")
         self.server = response["server"]
         self.ts = response["ts"]
