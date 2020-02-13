@@ -8,7 +8,7 @@ from saya import AVk, AUploader
 vk = AVk(login=88005553535, password="qwerty", debug=True)
 
 
-@vk.on_message_new(False)
+@vk.on_message_new
 async def get_new_message(event):
     if event["text"] == "logo":
         # Upload photo
