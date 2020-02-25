@@ -11,6 +11,7 @@ class Uploader:
         """
         self.session = vk.session
         self.call_method = vk.call_method
+        self.logger = vk.logger
 
     def album_photo(self, files, album_id,
                     group_id=None, caption=""):
@@ -184,8 +185,10 @@ class Uploader:
             "type": doc_type
         }
 
-        self._upload_files(data, files, "docs.getMessagesUploadServer")
+        response = self._upload_files(data, files, "docs.getMessagesUploadServer")
+        self.logger.debug(response)
         data = {
+            "file": response["file"],
             "title": title,
             "tags": tags,
             "return_tags": return_tags
