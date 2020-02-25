@@ -204,11 +204,8 @@ class AUploader:
             "type": doc_type
         }
 
-        response = await self._upload_files(
-            data, files, "docs.getMessagesUploadServer"
-        )
+        await self._upload_files(data, files, "docs.getMessagesUploadServer")
         data = {
-            "file": response["file"],
             "title": title,
             "tags": tags,
             "return_tags": return_tags
