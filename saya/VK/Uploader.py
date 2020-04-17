@@ -18,7 +18,7 @@ class Uploader:
         """upload photo in album
 
         Arguments:
-            files {str or list} -- file path or file paths
+            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
             album_id {int}
 
         Keyword Arguments:
@@ -47,7 +47,7 @@ class Uploader:
         """Upload audio file
 
         Arguments:
-            files {str or list} -- file path or file paths
+            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
 
         Keyword Arguments:
             artist {str} -- songwriter. The default is taken from ID3 tags. (default: {""})
@@ -70,7 +70,7 @@ class Uploader:
         """upload chat photo
 
         Arguments:
-            files {str or list} -- file path or file paths
+            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
             chat_id {int} -- id of the conversation for which you want to upload a photo
 
         Keyword Arguments:
@@ -100,7 +100,7 @@ class Uploader:
         """update group cover photo
 
         Arguments:
-            files {str or list} -- file path or file paths
+            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
             group_id {int} -- community id.
 
         Keyword Arguments:
@@ -134,7 +134,7 @@ class Uploader:
         """upload document
 
         Arguments:
-            files {str or list} -- file path or file paths
+            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
             group_id {int} -- community identifier (if you need to upload a document to the list of community documents).
 
         Keyword Arguments:
@@ -168,7 +168,7 @@ class Uploader:
         """Uploads document in message.
 
         Arguments:
-            files {str or list} -- file path or file paths
+            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
             peer_id {int} -- destination identifier.
 
         Keyword Arguments:
@@ -225,7 +225,7 @@ class Uploader:
         """upload photo in message
 
         Arguments:
-            files {str or list} -- file path or file paths
+            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
             peer_id {int} -- destination identifier (for uploading photos in community posts).
 
         Returns:
@@ -252,7 +252,7 @@ class Uploader:
         the file is no more than 50 MB in size, and the aspect ratio is at least 1:20.
 
         Arguments:
-            files {str or list} -- file path or file paths
+            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
             group_id {int} -- Community id for which you want to upload a product photo.
 
         Keyword Arguments:
@@ -295,7 +295,7 @@ class Uploader:
         the file is no more than 50 MB in size, and the aspect ratio is at least 1:20.
 
         Arguments:
-            files {str or list} -- file path or file paths
+            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
             group_id {int} -- Community id for which you want to upload a product photo.
 
         Returns:
@@ -315,7 +315,7 @@ class Uploader:
         """update profile photo
 
         Arguments:
-            files {str or list} -- file path or file paths
+            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
 
         Keyword Arguments:
             owner_id {int} -- id of the community or current user. (default id of current user)
@@ -342,7 +342,7 @@ class Uploader:
         """upload video
 
         Arguments:
-            files {str or list} -- file path or file paths
+            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
             album_id {int} -- id of the album into which the video file will be uploaded.
 
         Keyword Arguments:
@@ -397,14 +397,20 @@ class Uploader:
         upload_url = self.call_method(method, data)["response"]["upload_url"]
         uplfiles = {}
 
-        if isinstance(files, str):
+        if not isinstance(files, list):
             files = [files]
 
         if len(files) > 1:
             for index, file in enumerate(files):
-                uplfiles["file%d" % (index+1)] = open(file, "rb")
+                if isinstance(file, str):
+                    uplfiles["file%d" % (index+1)] = open(file, "rb")
+                elif isinstance(file, bytes):
+                    uplfiles["file%d" % (index+1)] = file
         else:
-            uplfiles["file"] = open(files[0], "rb")
+            if isinstance(files[0], str):
+                uplfiles["file"] = open(files[0], "rb")
+            elif isinstance(files[0], bytes):
+                uplfiles["file"] = files[0]
 
         return self.session.post(upload_url, files=uplfiles).json()
 
@@ -413,7 +419,7 @@ class Uploader:
         """upload photo in wall post
 
         Arguments:
-            files {str or list} -- file path or file paths
+            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
 
         Keyword Arguments:
             group_id {int} -- id of the community on whose wall you want to upload the photo (without a minus sign). (default: {None})
