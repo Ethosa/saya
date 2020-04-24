@@ -23,6 +23,7 @@ class AVk:
             password {str} -- password. used for authorization through the user (default: {""})
             api {str} -- api version (default: {"5.103"})
             debug {bool} -- debug log (default: {False})
+            loop {asyncio event loop} -- event loop to use for requests
         """
         self.session = ClientSession(loop=loop)
 
