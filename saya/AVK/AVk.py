@@ -2,7 +2,7 @@
 # author: Ethosa
 from time import ctime as current_time
 
-from aiohttp import ClientSession
+from aiohttp import ClientSession, get_event_loop()
 
 from .ALongPoll import ALongPoll
 from .AUploader import AUploader
@@ -13,7 +13,7 @@ from ..VK.VkScript import VkScript
 class AVk:
     def __init__(self, token="", group_id="",
                  login="", password="", api="5.103",
-                 debug=False):
+                 debug=False, loop=get_event_loop()):
         """auth in VK
 
         Keyword Arguments:
@@ -23,8 +23,9 @@ class AVk:
             password {str} -- password. used for authorization through the user (default: {""})
             api {str} -- api version (default: {"5.103"})
             debug {bool} -- debug log (default: {False})
+            loop {asyncio event loop} -- event loop to use for requests
         """
-        self.session = ClientSession()
+        self.session = ClientSession(loop=loop)
 
         # Parses vk.com, if login and password are not empty.
         if login and password:
