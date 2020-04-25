@@ -7,7 +7,7 @@ from .VK import (Vk, LongPoll, event, VkAuthManager, VkScript,
 from .AVK import (AVk, ALongPoll, AUploader, AStreamingAPI)
 
 __copyright__ = "2020"
-__version__ = "0.3.6"
+__version__ = "0.3.7"
 __authors__ = ["Ethosa"]
 
 if __name__ == '__main__':
