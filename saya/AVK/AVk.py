@@ -2,7 +2,8 @@
 # author: Ethosa
 from time import ctime as current_time
 
-from aiohttp import ClientSession, get_event_loop
+from aiohttp import ClientSession
+import asyncio
 
 from .ALongPoll import ALongPoll
 from .AUploader import AUploader
@@ -13,7 +14,7 @@ from ..VK.VkScript import VkScript
 class AVk:
     def __init__(self, token="", group_id="",
                  login="", password="", api="5.103",
-                 debug=False, loop=get_event_loop()):
+                 debug=False, loop=asyncio.get_event_loop()):
         """auth in VK
 
         Keyword Arguments:
@@ -125,9 +126,9 @@ class AVk:
         async for event in self.longpoll.listen(True):
             if "type" in event:
                 if event["type"] in self.events:
-                    await self.events[event["type"]](event)
+                    asyncio.gather(self.events[event["type"]](event))
                 elif event["type"] in dir(self):
-                    await getattr(self, event["type"])(event)
+                    asyncio.gather(getattr(self, event["type"])(event))
             else:
                 self._log("WARNING", "Unknown event passed: %s" % (event))
 
