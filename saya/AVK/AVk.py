@@ -2,7 +2,8 @@
 # author: Ethosa
 from time import ctime as current_time
 
-from aiohttp import ClientSession, get_event_loop
+from aiohttp import ClientSession
+from asyncio import get_event_loop
 
 from .ALongPoll import ALongPoll
 from .AUploader import AUploader
