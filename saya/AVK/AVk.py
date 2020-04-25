@@ -2,7 +2,7 @@
 # author: Ethosa
 from time import ctime as current_time
 
-from aiohttp import ClientSession, get_event_loop()
+from aiohttp import ClientSession, get_event_loop
 
 from .ALongPoll import ALongPoll
 from .AUploader import AUploader
@@ -23,7 +23,7 @@ class AVk:
             password {str} -- password. used for authorization through the user (default: {""})
             api {str} -- api version (default: {"5.103"})
             debug {bool} -- debug log (default: {False})
-            loop {asyncio event loop} -- event loop to use for requests
+            loop {asyncio event loop} (default: new asyncio event loop) -- event loop to use for requests
         """
         self.session = ClientSession(loop=loop)
 
