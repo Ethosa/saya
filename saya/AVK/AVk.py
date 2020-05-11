@@ -48,7 +48,7 @@ class AVk:
 
         self.method = ""
         self.events = {}
-        
+
         self.longpoll = ALongPoll(self)
         self.uploader = AUploader(self)
         self.vks = VkScript()  # for pyexecute method.
