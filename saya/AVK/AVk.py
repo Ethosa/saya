@@ -140,7 +140,8 @@ class AVk:
             else:
                 self._log("WARNING", "Unknown event passed: %s" % (event))
 
-    def future_done(self, future):
+    @staticmethod
+    def future_done(future):
         """
         Every done method for VK event goes here.
         You can override it when you inherit from this class
