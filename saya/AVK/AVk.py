@@ -139,7 +139,7 @@ class AVk:
                 future.add_done_callback(self.future_done)
             else:
                 self._log("WARNING", "Unknown event passed: %s" % (event))
-    
+
     def future_done(self, future):
         """
         Every done method for VK event goes here.
