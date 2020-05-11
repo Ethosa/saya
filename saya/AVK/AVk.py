@@ -137,6 +137,9 @@ class AVk:
                 elif event["type"] in dir(self):
                     future = asyncio.gather(getattr(self, event["type"])(event))
                 future.add_done_callback(self.future_done)
+                    asyncio.gather(self.events[event["type"]](event))
+                elif event["type"] in dir(self):
+                    asyncio.gather(getattr(self, event["type"])(event))
             else:
                 self._log("WARNING", "Unknown event passed: %s" % (event))
 
