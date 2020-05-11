@@ -3,6 +3,9 @@
 from time import ctime as current_time
 
 from aiohttp import ClientSession
+import asyncio
+import traceback
+import sys
 
 from .ALongPoll import ALongPoll
 from .AUploader import AUploader
@@ -10,10 +13,15 @@ from ..VK.VkAuthManager import VkAuthManager
 from ..VK.VkScript import VkScript
 
 
+def print_exception(exc):
+	tb = traceback.TracebackException.from_exception(exc)
+	print("".join(tb.format()))
+
+
 class AVk:
     def __init__(self, token="", group_id="",
                  login="", password="", api="5.103",
-                 debug=False):
+                 debug=False, loop=asyncio.get_event_loop()):
         """auth in VK
 
         Keyword Arguments:
@@ -23,8 +31,9 @@ class AVk:
             password {str} -- password. used for authorization through the user (default: {""})
             api {str} -- api version (default: {"5.103"})
             debug {bool} -- debug log (default: {False})
+            loop {asyncio event loop} (default: new asyncio event loop) -- event loop to use for requests
         """
-        self.session = ClientSession()
+        self.session = ClientSession(loop=loop)
 
         # Parses vk.com, if login and password are not empty.
         if login and password:
@@ -39,7 +48,7 @@ class AVk:
 
         self.method = ""
         self.events = {}
-
+        
         self.longpoll = ALongPoll(self)
         self.uploader = AUploader(self)
         self.vks = VkScript()  # for pyexecute method.
@@ -124,11 +133,23 @@ class AVk:
         async for event in self.longpoll.listen(True):
             if "type" in event:
                 if event["type"] in self.events:
-                    await self.events[event["type"]](event)
+                    future = asyncio.gather(self.events[event["type"]](event))
                 elif event["type"] in dir(self):
-                    await getattr(self, event["type"])(event)
+                    future = asyncio.gather(getattr(self, event["type"])(event))
+                future.add_done_callback(self.future_done)
             else:
                 self._log("WARNING", "Unknown event passed: %s" % (event))
+    
+    def future_done(self, future):
+        """
+        Every done method for VK event goes here.
+        You can override it when you inherit from this class
+        """
+        exc = future.exception()
+        if exc:
+        	# I can't throw an exception because asyncio catches it
+            print_exception(exc)
+            sys.exit()
 
     def __getattr__(self, attr):
         """
