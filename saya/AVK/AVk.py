@@ -4,11 +4,18 @@ from time import ctime as current_time
 
 from aiohttp import ClientSession
 import asyncio
+import traceback
+import sys
 
 from .ALongPoll import ALongPoll
 from .AUploader import AUploader
 from ..VK.VkAuthManager import VkAuthManager
 from ..VK.VkScript import VkScript
+
+
+def print_exception(exc):
+    tb = traceback.TracebackException.from_exception(exc)
+    print("".join(tb.format()))
 
 
 class AVk:
@@ -126,11 +133,27 @@ class AVk:
         async for event in self.longpoll.listen(True):
             if "type" in event:
                 if event["type"] in self.events:
+                    future = asyncio.gather(self.events[event["type"]](event))
+                elif event["type"] in dir(self):
+                    future = asyncio.gather(getattr(self, event["type"])(event))
+                future.add_done_callback(self.future_done)
                     asyncio.gather(self.events[event["type"]](event))
                 elif event["type"] in dir(self):
                     asyncio.gather(getattr(self, event["type"])(event))
             else:
                 self._log("WARNING", "Unknown event passed: %s" % (event))
+
+    @staticmethod
+    def future_done(future):
+        """
+        Every done method for VK event goes here.
+        You can override it when you inherit from this class
+        """
+        exc = future.exception()
+        if exc:
+        	# I can't throw an exception because asyncio catches it
+            print_exception(exc)
+            sys.exit()
 
     def __getattr__(self, attr):
         """
