@@ -14,8 +14,8 @@ from ..VK.VkScript import VkScript
 
 
 def print_exception(exc):
-	tb = traceback.TracebackException.from_exception(exc)
-	print("".join(tb.format()))
+    tb = traceback.TracebackException.from_exception(exc)
+    print("".join(tb.format()))
 
 
 class AVk:
