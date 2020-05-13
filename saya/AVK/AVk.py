@@ -132,14 +132,13 @@ class AVk:
         """
         async for event in self.longpoll.listen(True):
             if "type" in event:
+                future = None
                 if event["type"] in self.events:
                     future = asyncio.gather(self.events[event["type"]](event))
                 elif event["type"] in dir(self):
                     future = asyncio.gather(getattr(self, event["type"])(event))
-                future.add_done_callback(self.future_done)
-                    asyncio.gather(self.events[event["type"]](event))
-                elif event["type"] in dir(self):
-                    asyncio.gather(getattr(self, event["type"])(event))
+                if future:
+                    future.add_done_callback(self.future_done)
             else:
                 self._log("WARNING", "Unknown event passed: %s" % (event))
 
