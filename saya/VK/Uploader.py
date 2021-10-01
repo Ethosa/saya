@@ -221,7 +221,7 @@ class Uploader:
                     objs.append("%s%s_%s" % (formtype, obj["owner_id"], obj["id"]))
             return ",".join(objs)
 
-    def message_photo(self, files, peer_id):
+    def message_photo(self, files, peer_id, group_id=0):
         """upload photo in message
 
         Arguments:
@@ -231,7 +231,8 @@ class Uploader:
         Returns:
             dict -- response after photo saved
         """
-        data = {"peer_id": peer_id}
+        if group_id:
+            data = {"peer_id": peer_id}
 
         response = self._upload_files(
             data, files, "photos.getMessagesUploadServer")
