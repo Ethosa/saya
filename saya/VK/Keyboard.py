@@ -5,6 +5,7 @@ from json import dumps
 
 
 class Keyboard(dict):
+    # noinspection PyMissingConstructor
     def __init__(self, one_time=False, inline=False, other_keyboard=None):
         """Initializes Keyboard object.
 

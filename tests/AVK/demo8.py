@@ -2,11 +2,12 @@
 # author: Ethosa
 # translate Python to VKScript
 import asyncio
+
 from saya import VkScript
 
 
 async def main():
-    vks = VkScript(useRegex=True)
+    vks = VkScript(use_regex=True)
     print(await vks.atranslate(script))
 
 if __name__ == '__main__':

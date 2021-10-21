@@ -3,8 +3,9 @@
 
 
 class TemplateElement(dict):
+    # noinspection PyMissingConstructor
     def __init__(self, title="", description="",
-                 photo_id="", buttons=[], action="open_link",
+                 photo_id="", buttons=None, action="open_link",
                  link="https://vk.com"):
         """Initializes a new TemplateElement object.
 
@@ -19,7 +20,7 @@ class TemplateElement(dict):
         self["title"] = title
         self["description"] = description
         self["photo_id"] = photo_id
-        self["buttons"] = buttons
+        self["buttons"] = buttons or []
         self["action"] = {"type": action}
         if action == "open_link":
             self["action"]["link"] = link

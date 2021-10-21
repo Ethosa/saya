@@ -1,8 +1,16 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
 from json import loads
+from typing import Optional
 
 from aiohttp.client_exceptions import WSServerHandshakeError
+
+STREAMING_API_HEADERS = {
+    "Content-Type": "application/json",
+    "Connection": "upgrade",
+    "Upgrade": "websocket",
+    "Sec-Websocket-Version": "13"
+}
 
 
 class AStreamingAPI:
@@ -17,6 +25,9 @@ class AStreamingAPI:
         self.call_method = vk.call_method
 
         self.url = ""
+
+        self.endpoint: Optional[str] = None
+        self.key: Optional[str] = None
 
     async def add_rule(self, tag, value):
         """Adds a new rule in the stream.
@@ -95,16 +106,14 @@ class AStreamingAPI:
         Yields:
             dict -- event
         """
-        headers = [
-            ("Content-Type", "application/json"),
-            ("Connection", "upgrade"),
-            ("Upgrade", "websocket"),
-            ("Sec-Websocket-Version", "13"),
-        ]
+        if self.endpoint is None or self.key is None:
+            await self.auth()
         url = "wss://%s/stream?key=%s" % (self.endpoint, self.key)
-        while 1:
+        while True:
             try:
-                response = await self.session.ws_connect(url, headers=headers)
+                response = await self.session.ws_connect(
+                    url, headers=STREAMING_API_HEADERS
+                )
             except WSServerHandshakeError:
                 continue
             data = await response.receive()

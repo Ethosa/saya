@@ -5,10 +5,9 @@ from logging import getLogger, StreamHandler, Formatter
 from requests import Session
 
 from .LongPoll import LongPoll
-from .VkAuthManager import VkAuthManager
 from .Uploader import Uploader
+from .VkAuthManager import VkAuthManager
 from .VkScript import VkScript
-
 from ..StartThread import StartThread
 
 
@@ -62,7 +61,7 @@ class Vk(object):
         self.longpoll = LongPoll(self)
         self.vks = VkScript()  # for pyexecute method.
 
-    def call_method(self, method, data={}):
+    def call_method(self, method, data=None):
         """call to any method in VK api
 
         Arguments:
@@ -75,11 +74,13 @@ class Vk(object):
         Returns:
             dict -- response after calling method
         """
+        if not data:
+            data = {}
         data["v"] = self.v
         data["access_token"] = self.token
         response = self.session.post(
-                "https://api.vk.com/method/%s" % method, data=data
-            ).json()
+            "https://api.vk.com/method/%s" % method, data=data
+        ).json()
 
         # Logging.
         if "error" in response:
@@ -89,7 +90,7 @@ class Vk(object):
                 )
             )
         else:
-            self.logger.debug('Successfully called method "%s"' % (method))
+            self.logger.debug('Successfully called method "%s"' % method)
         return response
 
     def execute(self, code):
@@ -127,7 +128,7 @@ class Vk(object):
                 elif event["type"] in dir(self):
                     getattr(self, event["type"])(event)
             else:
-                self.logger.warning('Unknown event passed: "%s"' % (event))
+                self.logger.warning('Unknown event passed: "%s"' % event)
 
     def __getattr__(self, attr):
         """A convenient alternative for the call_method method.
@@ -143,7 +144,7 @@ class Vk(object):
             attr = attr[3:]
 
             def decorator(obj):
-                def listen(f):
+                def listen(_f):
                     for event in self.longpoll.listen(True):
                         if event["type"] == attr:
                             obj(event)

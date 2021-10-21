@@ -1,8 +1,16 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
 from json import loads
+from typing import Optional
 
 from websocket import create_connection
+
+STREAMING_API_HEADERS = {
+    "Content-Type": "application/json",
+    "Connection": "upgrade",
+    "Upgrade": "websocket",
+    "Sec-Websocket-Version": "13"
+}
 
 
 class StreamingAPI:
@@ -17,6 +25,9 @@ class StreamingAPI:
         self.call_method = vk.call_method
 
         self.url = ""
+
+        self.endpoint: Optional[str] = None
+        self.key: Optional[str] = None
 
     def add_rule(self, tag, value):
         """Adds a new rule in the stream.
@@ -92,17 +103,14 @@ class StreamingAPI:
         Yields:
             dict -- event
         """
-        while 1:
+        if self.endpoint is None or self.key is None:
+            self.auth()
+        while True:
             ws = create_connection(
                 "wss://%s/stream?key=%s" % (
                     self.endpoint, self.key
                 ),
-                header=[
-                    "Content-Type: application/json"
-                    "Connection: upgrade",
-                    "Upgrade: websocket",
-                    "Sec-Websocket-Version: 13",
-                ]
+                header=STREAMING_API_HEADERS
             )
             result = ws.recv()
             ws.close()

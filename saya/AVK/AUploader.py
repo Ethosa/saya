@@ -4,6 +4,10 @@
 from json import loads
 
 
+class UnsupportedResponseFormat(Exception):
+    pass
+
+
 class AUploader:
     def __init__(self, vk):
         self.session = vk.session
@@ -56,7 +60,9 @@ class AUploader:
         if group_id:
             data["group_id"] = group_id
 
-        response = await self._upload_files(data, files, "photos.getUploadServer")
+        response = await self._upload_files(
+            data, files, "photos.getUploadServer"
+        )
 
         data["caption"] = caption
         data["server"] = response["server"]
@@ -85,6 +91,10 @@ class AUploader:
             "hash": response["hash"]
         }
 
+        for field_name, value in (("artist", artist), ("title", title)):
+            if value:
+                data[field_name] = value
+
         return await self.call_method("audio.save", data)
 
     async def chat_photo(self, files, chat_id, crop_x=None,
@@ -111,7 +121,9 @@ class AUploader:
         if crop_width:
             data["crop_width"] = crop_width
 
-        response = await self._upload_files(data, files, "photos.getChatUploadServer")
+        response = await self._upload_files(
+            data, files, "photos.getChatUploadServer"
+        )
 
         data = {"file": response["response"]}
 
@@ -236,13 +248,18 @@ class AUploader:
 
         if isinstance(response, dict):
             if "owner_id" in response and "id" in response:
-                return "%s%s_%s" % (formtype, response["owner_id"], response["id"])
+                return (
+                    "%s%s_%s" % (formtype, response["owner_id"], response["id"])
+                )
         elif isinstance(response, list):
             objs = []
             for obj in response:
                 if "owner_id" in obj and "id" in obj:
-                    objs.append("%s%s_%s" % (formtype, obj["owner_id"], obj["id"]))
+                    objs.append(
+                        "%s%s_%s" % (formtype, obj["owner_id"], obj["id"])
+                    )
             return ",".join(objs)
+        raise UnsupportedResponseFormat
 
     async def message_photo(self, files, peer_id):
         """upload photo in message
@@ -257,7 +274,8 @@ class AUploader:
         data = {"peer_id": peer_id}
 
         response = await self._upload_files(
-            data, files, "photos.getMessagesUploadServer")
+            data, files, "photos.getMessagesUploadServer"
+        )
 
         data["server"] = response["server"]
         data["hash"] = response["hash"]
@@ -298,14 +316,18 @@ class AUploader:
         if main_photo:
             data["main_photo"] = main_photo
 
-        response = await self._upload_files(data, files, "photos.getMarketUploadServer")
+        response = await self._upload_files(
+            data, files, "photos.getMarketUploadServer"
+        )
 
-        data = {"group_id": group_id}
-        data["server"] = response["server"]
-        data["hash"] = response["hash"]
-        data["photo"] = response["photo"]
-        data["crop_data"] = response["crop_data"]
-        data["crop_hash"] = response["crop_hash"]
+        data = {
+            "group_id": group_id,
+            "server": response["server"],
+            "hash": response["hash"],
+            "photo": response["photo"],
+            "crop_data": response["crop_data"],
+            "crop_hash": response["crop_hash"]
+        }
 
         return await self.call_method("photos.saveMarketPhoto", data)
 
@@ -326,7 +348,9 @@ class AUploader:
         """
         data = {"group_id": group_id}
 
-        response = await self._upload_files(data, files, "photos.getMarketAlbumUploadServer")
+        response = await self._upload_files(
+            data, files, "photos.getMarketAlbumUploadServer"
+        )
 
         data["server"] = response["server"]
         data["hash"] = response["hash"]
@@ -350,7 +374,9 @@ class AUploader:
         if owner_id:
             data["owner_id"] = owner_id
 
-        response = await self._upload_files(data, files, "photos.getOwnerPhotoUploadServer")
+        response = await self._upload_files(
+            data, files, "photos.getOwnerPhotoUploadServer"
+        )
         del data["owner_id"]
 
         data["server"] = response["server"]
@@ -359,9 +385,10 @@ class AUploader:
 
         return await self.call_method("photos.saveOwnerPhoto", data)
 
-    async def video(self, files, album_id, name="", description="", is_private=0,
-                    wallpost=0, link="", group_id=0, privacy_view="", privacy_comment="",
-                    no_comments=0, repeat=0, compression=0):
+    async def video(self, files, album_id, name="", description="",
+                    is_private=0, wallpost=0, link="", group_id=0,
+                    privacy_view="", privacy_comment="", no_comments=0,
+                    repeat=0, compression=0):
         """upload video
 
         Arguments:
@@ -435,7 +462,9 @@ class AUploader:
         if group_id:
             data["group_id"] = group_id
 
-        response = await self._upload_files(data, files, "photos.getWallUploadServer")
+        response = await self._upload_files(
+            data, files, "photos.getWallUploadServer"
+        )
 
         if user_id:
             data["user_id"] = user_id

@@ -10,4 +10,4 @@ for i in range(10):
     b += 1
 return b
 """
-print(VkScript(useRegex=True).translate(script))
+print(VkScript(use_regex=True).translate(script))

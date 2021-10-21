@@ -5,7 +5,8 @@ from retranslator import Translator
 
 
 class VkScript(Translator):
-    def __init__(self, codeString="", rules=[], useRegex=False, debug=False):
+    def __init__(
+            self, code_string="", rules=None, use_regex=False, debug=False):
         """Python to VK Script translator
 
         Keyword Arguments:
@@ -14,8 +15,10 @@ class VkScript(Translator):
             useRegex {bool} -- use regex or re library (default: {False})
             debug {bool}
         """
+        if not rules:
+            rules = []
         rules.extend(VkScript.RULES)
-        Translator.__init__(self, codeString, rules, useRegex, debug)
+        Translator.__init__(self, code_string, rules, use_regex, debug)
 
     MAX_COUNT = 12
 
