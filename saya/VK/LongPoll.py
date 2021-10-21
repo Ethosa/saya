@@ -2,7 +2,7 @@
 # author: Ethosa
 from time import sleep
 
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError as RequestsConnectionError
 
 from .Event import event
 
@@ -32,7 +32,9 @@ class LongPoll:
             self.for_server = "%s?act=a_check&key=%s&ts=%s&wait=25"
         else:
             self.method = "https://api.vk.com/method/messages.getLongPollServer"
-            self.for_server = "https://%s?act=a_check&key=%s&ts=%s&wait=25&mode=202&version=3"
+            self.for_server = (
+                "https://%s?act=a_check&key=%s&ts=%s&wait=25&mode=202&version=3"
+            )
 
     def _get_server(self):
         """
@@ -50,7 +52,7 @@ class LongPoll:
                     self.session.get(self.method, params=self.data).json()
                 )
                 break
-            except ConnectionError:
+            except RequestsConnectionError:
                 sleep(.2)
         if "response" in response:
             response = response["response"]
@@ -73,11 +75,11 @@ class LongPoll:
                 response = self.session.get(
                     self.for_server % (self.server, self.key, self.ts)
                 ).json()
-                while "ts" not in response or "updates" not in response:
+                if "ts" not in response or "updates" not in response:
                     self._get_server()
                 else:
                     return response
-            except ConnectionError:
+            except RequestsConnectionError:
                 sleep(.2)
 
     def listen(self, ev=False):
