@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
+from typing import Optional
 
-from requests import Session
-from regex import findall
 from bs4 import BeautifulSoup
+from regex import findall
+from requests import Session
 
 
 class VkAuthManager:
@@ -23,6 +24,7 @@ class VkAuthManager:
             'Connection': 'keep-alive',
             'DNT': '1'
         }
+        self.auth_page: Optional[str] = None
 
     def login(self, email, password):
         """
@@ -82,6 +84,8 @@ class VkAuthManager:
         Returns:
             string -- user id.
         """
+        if self.auth_page is None:
+            raise ValueError("self.auth_page is None, run .login() first!")
         found = findall(r"\"[ ]*uid[ ]*\"[ ]*:[ ]*\"([^\"]+)\"",
                         self.auth_page)
         if found:
@@ -93,6 +97,8 @@ class VkAuthManager:
         Returns:
             string -- user domain.
         """
+        if self.auth_page is None:
+            raise ValueError("self.auth_page is None, run .login() first!")
         found = findall(r"onLoginDone\('([^']+)", self.auth_page)
         if found:
             return found[0]

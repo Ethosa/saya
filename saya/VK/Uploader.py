@@ -2,6 +2,10 @@
 # author: Ethosa
 
 
+class UnsupportedResponseFormat(Exception):
+    pass
+
+
 class Uploader:
     def __init__(self, vk):
         """Initializes new Uploader object.
@@ -62,6 +66,10 @@ class Uploader:
             "audio": response["audio"],
             "hash": response["hash"]
         }
+
+        for field_name, value in (("artist", artist), ("title", title)):
+            if value:
+                data[field_name] = value
 
         return self.call_method("audio.save", data)
 
@@ -185,7 +193,9 @@ class Uploader:
             "type": doc_type
         }
 
-        response = self._upload_files(data, files, "docs.getMessagesUploadServer")
+        response = self._upload_files(
+            data, files, "docs.getMessagesUploadServer"
+        )
         self.logger.debug(response)
         data = {
             "file": response["file"],
@@ -213,13 +223,18 @@ class Uploader:
 
         if isinstance(response, dict):
             if "owner_id" in response and "id" in response:
-                return "%s%s_%s" % (formtype, response["owner_id"], response["id"])
+                return (
+                    "%s%s_%s" % (formtype, response["owner_id"], response["id"])
+                )
         elif isinstance(response, list):
             objs = []
             for obj in response:
                 if "owner_id" in obj and "id" in obj:
-                    objs.append("%s%s_%s" % (formtype, obj["owner_id"], obj["id"]))
+                    objs.append(
+                        "%s%s_%s" % (formtype, obj["owner_id"], obj["id"])
+                    )
             return ",".join(objs)
+        raise UnsupportedResponseFormat
 
     def message_photo(self, files, peer_id, group_id=0):
         """upload photo in message
@@ -231,11 +246,11 @@ class Uploader:
         Returns:
             dict -- response after photo saved
         """
-        if group_id:
-            data = {"peer_id": peer_id}
+        data = {"peer_id": peer_id} if group_id else {}
 
         response = self._upload_files(
-            data, files, "photos.getMessagesUploadServer")
+            data, files, "photos.getMessagesUploadServer"
+        )
 
         data["server"] = response["server"]
         data["hash"] = response["hash"]
@@ -276,14 +291,18 @@ class Uploader:
         if main_photo:
             data["main_photo"] = main_photo
 
-        response = self._upload_files(data, files, "photos.getMarketUploadServer")
+        response = self._upload_files(
+            data, files, "photos.getMarketUploadServer"
+        )
 
-        data = {"group_id": group_id}
-        data["server"] = response["server"]
-        data["hash"] = response["hash"]
-        data["photo"] = response["photo"]
-        data["crop_data"] = response["crop_data"]
-        data["crop_hash"] = response["crop_hash"]
+        data = {
+            "group_id": group_id,
+            "server": response["server"],
+            "hash": response["hash"],
+            "photo": response["photo"],
+            "crop_data": response["crop_data"],
+            "crop_hash": response["crop_hash"]
+        }
 
         return self.call_method("photos.saveMarketPhoto", data)
 
@@ -304,7 +323,9 @@ class Uploader:
         """
         data = {"group_id": group_id}
 
-        response = self._upload_files(data, files, "photos.getMarketAlbumUploadServer")
+        response = self._upload_files(
+            data, files, "photos.getMarketAlbumUploadServer"
+        )
 
         data["server"] = response["server"]
         data["hash"] = response["hash"]
@@ -328,7 +349,9 @@ class Uploader:
         if owner_id:
             data["owner_id"] = owner_id
 
-        response = self._upload_files(data, files, "photos.getOwnerPhotoUploadServer")
+        response = self._upload_files(
+            data, files, "photos.getOwnerPhotoUploadServer"
+        )
         del data["owner_id"]
 
         data["server"] = response["server"]

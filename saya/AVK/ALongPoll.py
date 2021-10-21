@@ -15,6 +15,7 @@ class ALongPoll:
             vk {Vk} -- authed VK object
         """
         self.v = vk.v
+        # noinspection PyProtectedMember
         self._log = vk._log
         self.debug = vk.debug
         self.session = vk.session
@@ -33,7 +34,9 @@ class ALongPoll:
             self.for_server = "%s?act=a_check&key=%s&ts=%s&wait=25"
         else:
             self.method = "https://api.vk.com/method/messages.getLongPollServer"
-            self.for_server = "https://%s?act=a_check&key=%s&ts=%s&wait=25&mode=202&version=3"
+            self.for_server = (
+                "https://%s?act=a_check&key=%s&ts=%s&wait=25&mode=202&version=3"
+            )
 
     async def _get_server(self):
         """
@@ -42,12 +45,14 @@ class ALongPoll:
         Raises:
             ValueError -- Invalid authentication.
         """
-        try:
-            response = await self.session.get(self.method, params=self.data)
-            response = await response.json()
-        except ClientOSError:
-            await sleep(.2)
-            await self._get_server()
+        while True:
+            try:
+                response = await (
+                    await self.session.get(self.method, params=self.data)
+                ).json()
+                break
+            except ClientOSError:
+                await sleep(.2)
         if "response" in response:
             response = response["response"]
         else:
@@ -60,18 +65,18 @@ class ALongPoll:
         """
         Returns server response after calling.
         """
-        try:
-            response = await self.session.get(
-                self.for_server % (self.server, self.key, self.ts)
-            )
-            response = await response.json()
-            if "ts" not in response or "updates" not in response:
-                await self._get_server()
-                response = await self._get_events()
-            return response
-        except ClientOSError:
-            await sleep(.2)
-            return await self._get_events()
+        while True:
+            try:
+                response = await self.session.get(
+                    self.for_server % (self.server, self.key, self.ts)
+                )
+                response = await response.json()
+                if "ts" not in response or "updates" not in response:
+                    await self._get_server()
+                else:
+                    return response
+            except ClientOSError:
+                await sleep(.2)
 
     async def listen(self, ev=False):
         """
@@ -89,7 +94,7 @@ class ALongPoll:
         await self._log("INFO", "LongPoll launched")
 
         # Start listening.
-        while 1:
+        while True:
             response = await self._get_events()
             self.ts = response["ts"]
 

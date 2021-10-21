@@ -2,7 +2,7 @@
 # author: Ethosa
 from time import sleep
 
-from requests.exceptions import ConnectionError as CError
+from requests.exceptions import ConnectionError
 
 from .Event import event
 
@@ -44,11 +44,14 @@ class LongPoll:
         Raises:
             ValueError -- Invalid authentication.
         """
-        try:
-            response = self.session.get(self.method, params=self.data).json()
-        except CError:
-            sleep(.2)
-            self._get_server()
+        while True:
+            try:
+                response = (
+                    self.session.get(self.method, params=self.data).json()
+                )
+                break
+            except ConnectionError:
+                sleep(.2)
         if "response" in response:
             response = response["response"]
         else:
@@ -65,17 +68,17 @@ class LongPoll:
         Returns:
             dict -- server response.
         """
-        try:
-            response = self.session.get(
-                self.for_server % (self.server, self.key, self.ts)
-            ).json()
-            while "ts" not in response or "updates" not in response:
-                self._get_server()
-                response = self._get_events()
-            return response
-        except CError:
-            sleep(.2)
-            return self._get_events()
+        while True:
+            try:
+                response = self.session.get(
+                    self.for_server % (self.server, self.key, self.ts)
+                ).json()
+                while "ts" not in response or "updates" not in response:
+                    self._get_server()
+                else:
+                    return response
+            except ConnectionError:
+                sleep(.2)
 
     def listen(self, ev=False):
         """
@@ -93,7 +96,7 @@ class LongPoll:
         self.logger.info("LongPoll launched")
 
         # Start listening.
-        while 1:
+        while True:
             response = self._get_events()
             self.ts = response["ts"]
 

@@ -5,6 +5,7 @@ from json import dumps
 
 
 class Template(dict):
+    # noinspection PyMissingConstructor
     def __init__(self, ttype="carousel"):
         """
         Creates a Template object.
