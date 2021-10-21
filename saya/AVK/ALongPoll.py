@@ -52,6 +52,9 @@ class ALongPoll:
                 ).json()
                 break
             except ClientOSError:
+                self._log(
+                    "RequestsConnectionError happened, trying one more time"
+                )
                 await sleep(.2)
         if "response" in response:
             response = response["response"]
@@ -76,6 +79,9 @@ class ALongPoll:
                 else:
                     return response
             except ClientOSError:
+                self._log(
+                    "RequestsConnectionError happened, trying one more time"
+                )
                 await sleep(.2)
 
     async def listen(self, ev=False):

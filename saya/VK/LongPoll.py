@@ -53,6 +53,9 @@ class LongPoll:
                 )
                 break
             except RequestsConnectionError:
+                self.logger.info(
+                    "RequestsConnectionError happened, trying one more time"
+                )
                 sleep(.2)
         if "response" in response:
             response = response["response"]
@@ -80,6 +83,9 @@ class LongPoll:
                 else:
                     return response
             except RequestsConnectionError:
+                self.logger.info(
+                    "RequestsConnectionError happened, trying one more time"
+                )
                 sleep(.2)
 
     def listen(self, ev=False):
