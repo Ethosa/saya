@@ -3,7 +3,10 @@
 from json import loads
 from typing import Optional
 
-from websocket import create_connection
+try:
+    from websocket import create_connection
+except ImportError:
+    pass
 
 STREAMING_API_HEADERS = {
     "Content-Type": "application/json",
