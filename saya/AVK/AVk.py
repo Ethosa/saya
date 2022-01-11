@@ -131,7 +131,8 @@ class AVk:
                     handler = self.events[event["type"]]
                 except KeyError:
                     handler = getattr(self, event["type"])
-                asyncio.create_task(handler(event))
+                if event['type'] in self.events or event['type'] in dir(self):
+                    asyncio.create_task(handler(event))
             else:
                 self._log("WARNING", "Unknown event passed: %s" % event)
 

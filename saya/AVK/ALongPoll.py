@@ -2,7 +2,7 @@
 # author: Ethosa
 from asyncio import sleep
 
-from aiohttp.client_exceptions import ClientOSError
+from aiohttp.client_exceptions import ClientConnectionError
 
 from ..VK.Event import event
 
@@ -51,7 +51,7 @@ class ALongPoll:
                     await self.session.get(self.method, params=self.data)
                 ).json()
                 break
-            except ClientOSError:
+            except ClientConnectionError:
                 self._log(
                     "RequestsConnectionError happened, trying one more time"
                 )
@@ -78,7 +78,7 @@ class ALongPoll:
                     await self._get_server()
                 else:
                     return response
-            except ClientOSError:
+            except ClientConnectionError:
                 self._log(
                     "RequestsConnectionError happened, trying one more time"
                 )
@@ -97,7 +97,7 @@ class ALongPoll:
         # Get server info and check it.
         await self._get_server()
 
-        await self._log("INFO", "LongPoll launched")
+        self._log("INFO", "LongPoll launched")
 
         # Start listening.
         while True:
