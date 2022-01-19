@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
+from typing import Dict, Any, Union, Optional, Literal, List
 
 
 class UnsupportedResponseFormat(Exception):
@@ -9,28 +10,24 @@ class UnsupportedResponseFormat(Exception):
 class Uploader:
     def __init__(self, vk):
         """Initializes new Uploader object.
-
-        Arguments:
-            vk {Vk}
         """
         self.session = vk.session
         self.call_method = vk.call_method
         self.logger = vk.logger
 
-    def album_photo(self, files, album_id,
-                    group_id=None, caption=""):
-        """upload photo in album
+    def album_photo(
+            self,
+            files: Union[str, List[str]],
+            album_id: int,
+            group_id: Optional[int] = None,
+            caption: str = ""
+    ) -> Dict[str, Any]:
+        """Uploads photo in album
 
-        Arguments:
-            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
-            album_id {int}
-
-        Keyword Arguments:
-            group_id {int} -- (default: {None})
-            caption {str} -- photo caption (default: {""})
-
-        Returns:
-            dict -- response after photo saved
+        :param files: file path, file paths, file as bytes or files as bytes
+        :param album_id: album ID.
+        :param group_id: group ID.
+        :param caption: photo caption
         """
         data = {
             "album_id": album_id
@@ -47,18 +44,17 @@ class Uploader:
 
         return self.call_method("photos.save", data)
 
-    def audio(self, files, artist="", title=""):
-        """Upload audio file
+    def audio(
+            self,
+            files: Union[str, List[str]],
+            artist: str = "",
+            title: str = ""
+    ) -> Dict[str, Any]:
+        """Uploads audio file
 
-        Arguments:
-            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
-
-        Keyword Arguments:
-            artist {str} -- songwriter. The default is taken from ID3 tags. (default: {""})
-            title {str} -- name of the composition. The default is taken from ID3 tags. (default: {""})
-
-        Returns:
-            dict -- response after audio saved
+        :param files: file path, file paths, file as bytes or files as bytes
+        :param artist: songwriter. The default is taken from ID3 tags.
+        :param title: name of the composition. The default is taken from ID3 tags.
         """
         response = self._upload_files({}, files, "audio.getUploadServer")
         data = {
@@ -73,21 +69,21 @@ class Uploader:
 
         return self.call_method("audio.save", data)
 
-    def chat_photo(self, files, chat_id, crop_x=None,
-                   crop_y=None, crop_width=None):
-        """upload chat photo
+    def chat_photo(
+            self,
+            files: Union[str, List[str]],
+            chat_id: int,
+            crop_x: Optional[int] = None,
+            crop_y: Optional[int] = None,
+            crop_width: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """Uploads chat photo
 
-        Arguments:
-            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
-            chat_id {int} -- id of the conversation for which you want to upload a photo
-
-        Keyword Arguments:
-            crop_x {int} -- x coordinate for cropping the photo (upper right corner). (default: {None})
-            crop_y {int} -- y coordinate for cropping the photo (upper right corner). (default: {None})
-            crop_width {int} -- Width of the photo after cropping in px. (default: {None})
-
-        Returns:
-            dict -- response after photo saved
+        :param files: file path, file paths, file as bytes or files as bytes
+        :param chat_id: id of the conversation for which you want to upload a photo
+        :param crop_x: x coordinate for cropping the photo (upper right corner).
+        :param crop_y: y coordinate for cropping the photo (upper right corner).
+        :param crop_width: Width of the photo after cropping in px.
         """
         data = {"chat_id": chat_id}
         if crop_x:
@@ -104,21 +100,23 @@ class Uploader:
 
         return self.call_method("messages.setChatPhoto", data)
 
-    def cover_photo(self, files, group_id, crop_x=0, crop_y=0, crop_x2=795, crop_y2=200):
-        """update group cover photo
+    def cover_photo(
+            self,
+            files: Union[str, List[str]],
+            group_id: int,
+            crop_x: int = 0,
+            crop_y: int = 0,
+            crop_x2: int = 795,
+            crop_y2: int = 200
+    ) -> Dict[str, Any]:
+        """Updates group cover photo
 
-        Arguments:
-            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
-            group_id {int} -- community id.
-
-        Keyword Arguments:
-            crop_x {int} -- X coordinate of the upper left corner to crop the image. (default: {0})
-            crop_y {int} -- Y coordinate of the upper left corner to crop the image. (default: {0})
-            crop_x2 {int} -- X coordinate of the lower right corner to crop the image. (default: {795})
-            crop_y2 {int} -- Y coordinate of the lower right corner to crop the image. (default: {200})
-
-        Returns:
-            dict -- response after photo saved
+        :param files: file path, file paths, file as bytes or files as bytes
+        :param group_id: community id.
+        :param crop_x: X coordinate of the upper left corner to crop the image.
+        :param crop_y: Y coordinate of the upper left corner to crop the image.
+        :param crop_x2: X coordinate of the lower right corner to crop the image.
+        :param crop_y2: Y coordinate of the lower right corner to crop the image.
         """
         data = {
             "group_id": group_id,
@@ -137,22 +135,22 @@ class Uploader:
 
         return self.call_method("photos.saveOwnerCoverPhoto", data)
 
-    def document(self, files, group_id=None, title="",
-                 tags="", return_tags=0, is_wall=False):
-        """upload document
+    def document(
+            self,
+            files: Union[str, List[str]],
+            group_id: Optional[int] = None,
+            title: str = "",
+            tags: str = "",
+            return_tags: int = 0,
+            is_wall: bool = False
+    ) -> Dict[str, Any]:
+        """Uploads document
 
-        Arguments:
-            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
-            group_id {int} -- community identifier (if you need to upload a document to the list of community documents).
-
-        Keyword Arguments:
-            title {str} -- document's name. (default: {""})
-            tags {str} -- tags for search. (default: {""})
-            return_tags {number} (default: {0})
-            is_wall {bool} -- upload document in wall? (default: {False})
-
-        Returns:
-            dict -- response after document saved
+        :param files: file path, file paths, file as bytes or files as bytes
+        :param group_id: community identifier (if you need to upload a document to the list of community documents).
+        :param title: document's name.
+        :param tags: tags for search.
+        :param is_wall: upload document in wall?
         """
         data = {}
         if group_id:
@@ -171,22 +169,22 @@ class Uploader:
 
         return self.call_method("docs.save", data)
 
-    def document_message(self, files, peer_id, doc_type="doc", title="",
-                         tags="", return_tags=0):
+    def document_message(
+            self,
+            files,
+            peer_id,
+            doc_type="doc",
+            title="",
+            tags="",
+            return_tags=0
+    ) -> Dict[str, Any]:
         """Uploads document in message.
 
-        Arguments:
-            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
-            peer_id {int} -- destination identifier.
-
-        Keyword Arguments:
-            doc_type {str} -- type of document. Possible values: doc, audio_message (default: {"doc"})
-            title {str} -- document's name. (default: {""})
-            tags {str} -- tags for search. (default: {""})
-            return_tags {number} (default: {0})
-
-        Returns:
-            dict -- response after document saved
+        :param files: file path, file paths, file as bytes or files as bytes
+        :param peer_id:  destination identifier.
+        :param doc_type:  type of document. Possible values: doc, audio_message
+        :param title:  document's name.
+        :param tags:  tags for search.
         """
         data = {
             "peer_id": peer_id,
@@ -207,14 +205,16 @@ class Uploader:
         return self.call_method("docs.save", data)
 
     @staticmethod
-    def format(response, formtype="photo"):
+    def format(
+            response,
+            formtype: Literal[
+                'photo', 'video',
+                'audio', 'doc', 'graffiti'
+            ] = 'photo'
+    ) -> str:
         """response formatting
 
-        Arguments:
-            response {dict} -- response after object saved
-
-        Keyword Arguments:
-            formtype {str} -- "photo", "video", "audio" etc (default: {"photo"})
+        :param response: response after object saved
         """
         if isinstance(response, dict):
             response = response.get("response", response)
@@ -236,15 +236,16 @@ class Uploader:
             return ",".join(objs)
         raise UnsupportedResponseFormat
 
-    def message_photo(self, files, peer_id, group_id=0):
-        """upload photo in message
+    def message_photo(
+            self,
+            files: Union[str, List[str]],
+            peer_id: int,
+            group_id: int = 0
+    ) -> Dict[str, Any]:
+        """Uploads photo in message
 
-        Arguments:
-            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
-            peer_id {int} -- destination identifier (for uploading photos in community posts).
-
-        Returns:
-            dict -- response after photo saved
+        :param files: file path, file paths, file as bytes or files as bytes
+        :param peer_id: destination identifier (for uploading photos in community posts).
         """
         data = {"peer_id": peer_id} if group_id else {}
 
@@ -258,8 +259,15 @@ class Uploader:
 
         return self.call_method("photos.saveMessagesPhoto", data)
 
-    def market_photo(self, files, group_id, main_photo=None,
-                     crop_x=None, crop_y=None, crop_width=None):
+    def market_photo(
+            self,
+            files: Union[str, List[str]],
+            group_id: int,
+            main_photo: Optional[int] = None,
+            crop_x: Optional[int] = None,
+            crop_y: Optional[int] = None,
+            crop_width: Optional[int] = None
+    ) -> Dict[str, Any]:
         """upload product photo
 
         Allowed formats: JPG, PNG, GIF.
@@ -267,19 +275,13 @@ class Uploader:
         the sum of the height and width is no more than 14000px,
         the file is no more than 50 MB in size, and the aspect ratio is at least 1:20.
 
-        Arguments:
-            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
-            group_id {int} -- Community id for which you want to upload a product photo.
-
-        Keyword Arguments:
-            main_photo {int} -- whether the photo is the cover
-                of the product (1 - cover photo, 0 - additional photo) (default: {None})
-            crop_x {int} -- x coordinate for cropping the photo (upper right corner). (default: {None})
-            crop_y {int} -- y coordinate for cropping the photo (upper right corner). (default: {None})
-            crop_width {int} -- Width of the photo after cropping in px. (default: {None})
-
-        Returns:
-            dict -- response after photo saved
+        :param files: file path, file paths, file as bytes or files as bytes
+        :param group_id Community id for which you want to upload a product photo.
+        :param main_photo: whether the photo is the cover
+                           of the product (1 - cover photo, 0 - additional photo)
+        :param crop_x: x coordinate for cropping the photo (upper right corner).
+        :param crop_y: y coordinate for cropping the photo (upper right corner).
+        :param crop_width: Width of the photo after cropping in px.
         """
         data = {"group_id": group_id}
         if crop_x:
@@ -306,7 +308,11 @@ class Uploader:
 
         return self.call_method("photos.saveMarketPhoto", data)
 
-    def market_album_photo(self, files, group_id):
+    def market_album_photo(
+            self,
+            files: Union[str, List[str]],
+            group_id: int
+    ) -> Dict[str, Any]:
         """Uploading photos for a selection of goods
 
         Allowed formats: JPG, PNG, GIF.
@@ -314,12 +320,8 @@ class Uploader:
         the sum of the height and width is no more than 14000px,
         the file is no more than 50 MB in size, and the aspect ratio is at least 1:20.
 
-        Arguments:
-            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
-            group_id {int} -- Community id for which you want to upload a product photo.
-
-        Returns:
-            dict -- response after photo saved
+        :param files: file path, file paths, file as bytes or files as bytes
+        :param group_id: Community id for which you want to upload a product photo.
         """
         data = {"group_id": group_id}
 
@@ -336,14 +338,8 @@ class Uploader:
     def profile_photo(self, files, owner_id=None):
         """update profile photo
 
-        Arguments:
-            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
-
-        Keyword Arguments:
-            owner_id {int} -- id of the community or current user. (default id of current user)
-
-        Returns:
-            dict -- response after photo saved
+        :param files: file path, file paths, file as bytes or files as bytes
+        :param owner_id: id of the community or current user. (default id of current user)
         """
         data = {}
         if owner_id:
@@ -360,30 +356,36 @@ class Uploader:
 
         return self.call_method("photos.saveOwnerPhoto", data)
 
-    def video(self, files, album_id, name="", description="", is_private=0,
-              wallpost=0, link="", group_id=0, privacy_view="", privacy_comment="",
-              no_comments=0, repeat=0, compression=0):
-        """upload video
+    def video(
+            self,
+            files: Union[str, List[str]],
+            album_id: int,
+            name: str = "",
+            description: str = "",
+            is_private: int = 0,
+            wallpost: int = 0,
+            link: str = "",
+            group_id: int = 0,
+            privacy_view: str = "",
+            privacy_comment: str = "",
+            no_comments: int = 0,
+            repeat: int = 0,
+            compression: int = 0
+    ) -> Dict[str, Any]:
+        """Uploads video
 
-        Arguments:
-            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
-            album_id {int} -- id of the album into which the video file will be uploaded.
-
-        Keyword Arguments:
-            name {str} -- name of the video file. (default: {""})
-            description {str} -- description of the video file. (default: {""})
-            is_private {number} -- 1 is indicated if the video is uploaded for sending by personal message. (default: {0})
-            wallpost {number} -- whether after saving it is required to publish a video recording on the wall (default: {0})
-            link {str} -- url for embedding video from an external site. e.g. Youtube. (default: {""})
-            group_id {number} -- id of the community where the video will be saved. (default: {0})
-            privacy_view {str} -- privacy settings for viewing video in a special format. (default: {""})
-            privacy_comment {str} -- privacy settings for commenting on a video in a special format. (default: {""})
-            no_comments {number} -- 1 - close comments (for videos from communities). (default: {0})
-            repeat {number} -- looping video playback. (default: {0})
-            compression {number} (default: {0})
-
-        Returns:
-            dict -- response after photo saved
+        :param files: file path, file paths, file as bytes or files as bytes
+        :param album_id: id of the album into which the video file will be uploaded.
+        :param name: name of the video file.
+        :param description: description of the video file.
+        :param is_private: 1 is indicated if the video is uploaded for sending by personal message.
+        :param wallpost: whether after saving it is required to publish a video recording on the wall
+        :param link: url for embedding video from an external site. e.g. Youtube.
+        :param group_id: id of the community where the video will be saved.
+        :param privacy_view: privacy settings for viewing video in a special format.
+        :param privacy_comment: privacy settings for commenting on a video in a special format.
+        :param no_comments: 1 - close comments (for videos from communities).
+        :param repeat: looping video playback.
         """
         data = {
             "name": name,
@@ -417,7 +419,12 @@ class Uploader:
 
         return response
 
-    def _upload_files(self, data, files, method):
+    def _upload_files(
+            self,
+            data: Dict[str, Any],
+            files: Union[str, List[str]],
+            method: str
+    ) -> Dict[str, Any]:
         upload_url = self.call_method(method, data)["response"]["upload_url"]
         uplfiles = {}
 
@@ -438,20 +445,19 @@ class Uploader:
 
         return self.session.post(upload_url, files=uplfiles).json()
 
-    def wall_photo(self, files, group_id=None,
-                   user_id=None, caption=""):
+    def wall_photo(
+            self,
+            files: Union[str, List[str]],
+            group_id: Optional[int] = None,
+            user_id: Optional[int] = None,
+            caption: str =""
+    ) -> Dict[str, Any]:
         """upload photo in wall post
 
-        Arguments:
-            files {str, list or bytes} -- file path, file paths, file as bytes or files as bytes
-
-        Keyword Arguments:
-            group_id {int} -- id of the community on whose wall you want to upload the photo (without a minus sign). (default: {None})
-            user_id {int} -- id of the user whose wall you want to save the photo on. (default: {None})
-            caption {str} -- photo description text (maximum 2048 characters) (default: {""})
-
-        Returns:
-            dict -- response after photo saved
+        :param files: file path, file paths, file as bytes or files as bytes
+        :param group_id: id of the community on whose wall you want to upload the photo (without a minus sign).
+        :param user_id: id of the user whose wall you want to save the photo on.
+        :param caption: photo description text (maximum 2048 characters)
         """
         data = {}
         if group_id:

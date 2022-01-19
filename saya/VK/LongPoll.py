@@ -1,19 +1,17 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
+from typing import NoReturn, Dict, Any
 from time import sleep
 
-from requests.exceptions import ConnectionError as RequestsConnectionError
+from requests.exceptions import ConnectionError
 
-from .Event import event
+from .event import event
 
 
 class LongPoll:
+    """Provides working with VK Longpoll
+    """
     def __init__(self, vk):
-        """Class for using longpoll in VK
-
-        Arguments:
-            vk {Vk} -- authed VK object
-        """
         self.v = vk.v
         self.logger = vk.logger
         self.session = vk.session
@@ -36,9 +34,8 @@ class LongPoll:
                 "https://%s?act=a_check&key=%s&ts=%s&wait=25&mode=202&version=3"
             )
 
-    def _get_server(self):
-        """
-        Returns server, ts and key.
+    def _get_server(self) -> NoReturn:
+        """Returns server, ts and key.
 
         Returns:
             {str}, {str}, {str} -- server, ts and key
@@ -49,12 +46,12 @@ class LongPoll:
         while True:
             try:
                 response = (
-                    self.session.get(self.method, params=self.data).json()
+                    self.session.get(self.method, params=self.data, timeout=30).json()
                 )
                 break
-            except RequestsConnectionError:
+            except ConnectionError:
                 self.logger.info(
-                    "RequestsConnectionError happened, trying one more time"
+                    "ConnectionError happened, trying one more time"
                 )
                 sleep(.2)
         if "response" in response:
@@ -66,12 +63,8 @@ class LongPoll:
         self.ts = response["ts"]
         self.key = response["key"]
 
-    def _get_events(self):
-        """
-        Gets server events.
-
-        Returns:
-            dict -- server response.
+    def _get_events(self) -> Dict[str, Any]:
+        """Gets server events.
         """
         while True:
             try:
@@ -82,21 +75,17 @@ class LongPoll:
                     self._get_server()
                 else:
                     return response
-            except RequestsConnectionError:
+            except ConnectionError:
                 self.logger.info(
-                    "RequestsConnectionError happened, trying one more time"
+                    "ConnectionError happened, trying one more time"
                 )
                 sleep(.2)
 
-    def listen(self, ev=False):
-        """
-        Starts listening.
-
-        Keyword Argments:
-            ev {bool} -- always return dict object.
-
-        Yields:
-            {dict} -- new event
+    def listen(
+            self,
+            ev: bool = False
+    ) -> NoReturn:
+        """Starts listening.
         """
         # Get server info and check it.
         self._get_server()

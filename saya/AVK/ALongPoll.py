@@ -4,7 +4,7 @@ from asyncio import sleep
 
 from aiohttp.client_exceptions import ClientConnectionError
 
-from ..VK.Event import event
+from ..VK.event import event
 
 
 class ALongPoll:

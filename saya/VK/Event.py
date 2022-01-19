@@ -1,33 +1,35 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
+from typing import List, Union, Dict, Any
 
 
-def event(obj):
+def event(
+        obj: Union[Dict[str, Any], List[Any]]
+) -> Dict[str, Any]:
+    """Creates a dict object from list
+
+    :param obj: event from longpoll
     """
-    Creates a dict object from list
-
-    Arguments:
-        obj {dict or list} -- event from longpoll
-    """
-    if not isinstance(obj, list):
+    if isinstance(obj, dict):
         return obj
 
-    out = {}
-    if obj[0] in types:
-        timed = types[obj[0]][:]
-        out["type"] = timed[0]
+    result = {}
+    if obj[0] in _TYPES:
+        timed = _TYPES[obj[0]][:]
+        result["type"] = timed[0]
         timed.pop(0)
         obj.pop(0)
         length = len(obj)
         for index, key in enumerate(timed):
             if index < length:
-                out[key] = obj[index]
+                result[key] = obj[index]
     else:
-        out["type"] = "untyped"
-        out["object"] = obj
-    return out
+        result["type"] = "untyped"
+        result["object"] = obj
+    return result
 
-types = {
+
+_TYPES = {
     1: ["message_flags_replace", "message_id", "flags", "peer_id", "timestamp", "text", "object", "attachments", "random_id"],
     2: ["message_flags_add", "message_id", "flags", "peer_id", "timestamp", "text", "object", "attachments", "random_id"],
     3: ["message_flags_delete", "message_id", "flags", "peer_id", "timestamp", "text", "object", "attachments", "random_id"],

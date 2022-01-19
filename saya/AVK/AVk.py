@@ -7,8 +7,8 @@ from aiohttp import ClientSession
 
 from .ALongPoll import ALongPoll
 from .AUploader import AUploader
-from ..VK.VkAuthManager import VkAuthManager
-from ..VK.VkScript import VkScript
+from ..VK.vk_auth import VkAuthManager
+from ..VK.vks import VkScript
 
 
 class AVk:
@@ -118,7 +118,7 @@ class AVk:
         Returns:
             dict -- response
         """
-        code = await self.vks.atranslate(code)
+        code = self.vks.atranslate(code)
         return await self.execute(code)
 
     async def start_listen(self):

@@ -1,29 +1,35 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
+from typing import Union, Optional, Dict, Any, NoReturn
 from logging import getLogger, StreamHandler, Formatter
 
 from requests import Session
 
-from .LongPoll import LongPoll
-from .Uploader import Uploader
-from .VkAuthManager import VkAuthManager
-from .VkScript import VkScript
+from .longpoll import LongPoll
+from .uploader import Uploader
+from .vk_auth import VkAuthManager
+from .vks import VkScript
 from ..StartThread import StartThread
 
 
 class Vk(object):
-    def __init__(self, token="", group_id="",
-                 login="", password="", api="5.103",
-                 debug=False):
+    def __init__(
+            self,
+            token: str = "",
+            group_id: Union[str, int] = "",
+            login: str = "",
+            password: str = "",
+            api: str = "5.103",
+            debug: bool = False
+    ):
         """auth in VK
 
-        Keyword Arguments:
-            token {str} -- access_token (default: {""})
-            group_id {str} -- group id if you want to log in through the group (default: {""})
-            login {str} -- login. used for authorization through the user (default: {""})
-            password {str} -- password. used for authorization through the user (default: {""})
-            api {str} -- api version (default: {"5.103"})
-            debug {bool} -- debug log (default: {False})
+        :param token: access_token
+        :param group_id: group id if you want to log in through the group
+        :param login: login. used for authorization through the user
+        :param password: password. used for authorization through the user
+        :param api: api version
+        :param debug: debug log
         """
         self.session = Session()
 
@@ -61,30 +67,29 @@ class Vk(object):
         self.longpoll = LongPoll(self)
         self.vks = VkScript()  # for pyexecute method.
 
-    def call_method(self, method, data=None):
+    def call_method(
+            self,
+            method: str,
+            data: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """call to any method in VK api
 
-        Arguments:
-            method {str} -- method name
-            e.g. "messages.send", "wall.post"
-
-        Keyword Arguments:
-            data {dict} -- data to send (default: {{}})
-
-        Returns:
-            dict -- response after calling method
+        :param method: method name e.g. "messages.send", "wall.post"
+        :param data: data to send
         """
         if not data:
             data = {}
         data["v"] = self.v
         data["access_token"] = self.token
         response = self.session.post(
-            "https://api.vk.com/method/%s" % method, data=data
+            "https://api.vk.com/method/%s" % method,
+            data=data, timeout=30
         ).json()
 
         # Logging.
         if "error" in response:
-            self.logger.error('Error [%s] in called method "%s": %s' % (
+            self.logger.error(
+                'Error [%s] in called method "%s": %s' % (
                     response["error"]["error_code"], method,
                     response["error"]["error_msg"]
                 )
@@ -93,33 +98,28 @@ class Vk(object):
             self.logger.debug('Successfully called method "%s"' % method)
         return response
 
-    def execute(self, code):
-        """
-        Calls an execute VK API method
+    def execute(
+            self,
+            code: str
+    ) -> Dict[str, Any]:
+        """Calls an execute VK API method
 
-        Arguments:
-            code {str} -- VKScript code.
-
-        Returns:
-            dict -- response
+        :param code: VKScript code.
         """
         return self.call_method("execute", {"code": code})
 
-    def pyexecute(self, code):
-        """
-        Calls an execute VK API method
+    def pyexecute(
+            self,
+            code
+    ) -> Dict[str, Any]:
+        """Calls an execute VK API method
 
-        Arguments:
-            code {str} -- Python code.
-
-        Returns:
-            dict -- response
+        :param code: Python code.
         """
         return self.execute(self.vks.translate(code))
 
-    def start_listen(self):
-        """
-        Starts receiving events from the server.
+    def start_listen(self) -> NoReturn:
+        """Starts receiving events from the server.
         """
         for event in self.longpoll.listen(True):
             if "type" in event:
@@ -130,15 +130,13 @@ class Vk(object):
             else:
                 self.logger.warning('Unknown event passed: "%s"' % event)
 
-    def __getattr__(self, attr):
+    def __getattr__(
+            self,
+            attr: str
+    ) -> Any:
         """A convenient alternative for the call_method method.
 
-        Arguments:
-            attr {str} -- method name
-            e.g. messages.send, wall.post
-
-        Returns:
-            response after calling method
+        :param attr: method name e.g. messages.send, wall.post
         """
         if attr.startswith("on_"):  # e.g. on_message_new
             attr = attr[3:]
@@ -149,7 +147,7 @@ class Vk(object):
                         if event["type"] == attr:
                             obj(event)
 
-                if callable(obj):
+                if isinstance(obj, callable):
                     StartThread(listen, obj).start()
                 else:
                     # obj should be boolean

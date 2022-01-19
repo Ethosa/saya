@@ -1,20 +1,24 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
-
+from typing import NoReturn, Dict, Any
 from json import dumps
 
 
 class Keyboard(dict):
     # noinspection PyMissingConstructor
-    def __init__(self, one_time=False, inline=False, other_keyboard=None):
+    def __init__(
+            self,
+            one_time: bool = False,
+            inline: bool = False,
+            other_keyboard = None
+    ):
         """Initializes Keyboard object.
 
         if other_keyboard is another Keyboard object, then params of this keyboard copied from other Keyboard object.
 
-        Keyword Arguments:
-            one_time {bool} -- Hides keyboard after the first answer if True. (default: {False})
-            inline {bool} -- Shows keyboard inside the message, if True. (default: {False})
-            other_keyboard {Keyboard} -- other Keyboard object. (default: {None})
+        :param one_time: Hides keyboard after the first answer if True.
+        :param inline: Shows keyboard inside the message, if True.
+        :param other_keyboard: other Keyboard object.
         """
         if other_keyboard:
             self["one_time"] = other_keyboard["one_time"]
@@ -30,11 +34,13 @@ class Keyboard(dict):
         else:
             self.max_size = (4, 10)
 
-    def add(self, button):
+    def add(
+            self,
+            button: Dict[str, Any]
+    ) -> NoReturn:
         """Adds a new button in keyboard.
 
-        Arguments:
-            button {Button} -- Button object.
+        :param button: Button object.
         """
         if len(self["buttons"]) < self.max_size[1]:
             if len(self["buttons"][-1]) < self.max_size[0]:
@@ -45,15 +51,12 @@ class Keyboard(dict):
                         self.add_line()
                     self["buttons"][-1].append(button)
 
-    def add_line(self):
+    def add_line(self) -> NoReturn:
         """Adds a new line in the keyboard, if possible."""
         if len(self["buttons"]) < self.max_size[1]:
             self["buttons"].append([])
 
-    def compile(self):
+    def compile(self) -> str:
         """Compiles keyboard for sending it in the message.
-
-        Returns:
-            dict -- dictionary object for message sending.
         """
         return dumps(self)
