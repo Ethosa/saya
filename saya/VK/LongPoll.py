@@ -69,7 +69,8 @@ class LongPoll:
         while True:
             try:
                 response = self.session.get(
-                    self.for_server % (self.server, self.key, self.ts)
+                    self.for_server % (self.server, self.key, self.ts),
+                    timeout=30
                 ).json()
                 if "ts" not in response or "updates" not in response:
                     self._get_server()

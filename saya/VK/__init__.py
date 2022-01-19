@@ -11,4 +11,4 @@ from .button import create_button
 from .keyboard import Keyboard
 from .template_element import TemplateElement
 from .template import Template
-from .StreamingAPI import StreamingAPI
+from .streaming_api import StreamingAPI
