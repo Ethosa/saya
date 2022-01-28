@@ -46,7 +46,6 @@ class LongPoll:
         response = (
             self.session.get(self.method, params=self.data, timeout=30).json()
         )
-            sleep(1)
         if "response" in response:
             response = response["response"]
         else:
