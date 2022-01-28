@@ -82,7 +82,7 @@ class LongPoll:
         while True:
             try:
                 response = self._get_events()
-            except ClientConnectionError:
+            except ConnectionError:
                 self.logger.warning('connection error... trying restart listening in 5 seconds...')
                 sleep(5)
                 continue
