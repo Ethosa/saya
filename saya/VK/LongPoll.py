@@ -43,17 +43,10 @@ class LongPoll:
         Raises:
             ValueError -- Invalid authentication.
         """
-        while True:
-            try:
-                response = (
-                    self.session.get(self.method, params=self.data, timeout=30).json()
-                )
-                break
-            except ConnectionError:
-                self.logger.info(
-                    "ConnectionError happened, trying one more time"
-                )
-                sleep(.2)
+        response = (
+            self.session.get(self.method, params=self.data, timeout=30).json()
+        )
+            sleep(1)
         if "response" in response:
             response = response["response"]
         else:
@@ -66,21 +59,14 @@ class LongPoll:
     def _get_events(self) -> Dict[str, Any]:
         """Gets server events.
         """
-        while True:
-            try:
-                response = self.session.get(
-                    self.for_server % (self.server, self.key, self.ts),
-                    timeout=30
-                ).json()
-                if "ts" not in response or "updates" not in response:
-                    self._get_server()
-                else:
-                    return response
-            except ConnectionError:
-                self.logger.info(
-                    "ConnectionError happened, trying one more time"
-                )
-                sleep(.2)
+        response = self.session.get(
+            self.for_server % (self.server, self.key, self.ts),
+            timeout=30
+        ).json()
+        if "ts" not in response or "updates" not in response:
+            self._get_server()
+        else:
+            return response
 
     def listen(
             self,
@@ -95,7 +81,12 @@ class LongPoll:
 
         # Start listening.
         while True:
-            response = self._get_events()
+            try:
+                response = self._get_events()
+            except ClientConnectionError:
+                self.logger.warning('connection error... trying restart listening in 5 seconds...')
+                sleep(5)
+                continue
             self.ts = response["ts"]
 
             for update in response["updates"]:
