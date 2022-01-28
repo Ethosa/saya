@@ -45,17 +45,9 @@ class ALongPoll:
         Raises:
             ValueError -- Invalid authentication.
         """
-        while True:
-            try:
-                response = await (
-                    await self.session.get(self.method, params=self.data)
-                ).json()
-                break
-            except ClientConnectionError:
-                self._log(
-                    "RequestsConnectionError happened, trying one more time"
-                )
-                await sleep(.2)
+        response = await (
+            await self.session.get(self.method, params=self.data)
+        ).json()
         if "response" in response:
             response = response["response"]
         else:
@@ -69,22 +61,19 @@ class ALongPoll:
         Returns server response after calling.
         """
         while True:
-            try:
-                response = await self.session.get(
-                    self.for_server % (self.server, self.key, self.ts)
-                )
-                response = await response.json()
-                if "ts" not in response or "updates" not in response:
-                    await self._get_server()
-                else:
-                    return response
-            except ClientConnectionError:
-                self._log(
-                    "RequestsConnectionError happened, trying one more time"
-                )
-                await sleep(.2)
+            response = await self.session.get(
+                self.for_server % (self.server, self.key, self.ts)
+            )
+            response = await response.json()
+            if "ts" not in response or "updates" not in response:
+                await self._get_server()
+            else:
+                return response
 
-    async def listen(self, ev=False):
+    async def listen(
+            self,
+            ev: bool = False
+    ):
         """
         Starts listening.
 
@@ -101,7 +90,12 @@ class ALongPoll:
 
         # Start listening.
         while True:
-            response = await self._get_events()
+            try:
+                response = await self._get_events()
+            except ClientConnectionError:
+                self._log('WARNING', 'connection error... trying restart listening in 5 seconds...')
+                await sleep(5)
+                continue
             self.ts = response["ts"]
 
             for update in response["updates"]:
