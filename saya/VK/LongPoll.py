@@ -90,6 +90,16 @@ class LongPoll:
                 self.logger.warning('timeout error... trying restart listening in 10 seconds...')
                 sleep(10)
                 continue
+            except TypeError:
+                self.logger.warning('type error... trying restart listening in 5 seconds...')
+                sleep(5)
+                self._get_server()
+                continue
+            except Exception as e:
+                self.logger.warning('Unknown exception... trying restart listening in 15 seconds...')
+                sleep(15)
+                self._get_server()
+                continue
             self.ts = response["ts"]
 
             for update in response["updates"]:
