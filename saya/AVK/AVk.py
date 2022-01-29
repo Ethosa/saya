@@ -21,7 +21,7 @@ class AVk:
             password: str = "",
             api: str = "5.103",
             debug: bool = False,
-            loop: Optional[asyncio.EventLoop] = None
+            loop: Optional[asyncio.BaseEventLoop] = None
     ) -> NoReturn:
         """auth in VK
 
