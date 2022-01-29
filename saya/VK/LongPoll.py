@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
-from typing import NoReturn, Dict, Any
+from typing import NoReturn, Dict, Any, Optional
 from time import sleep
 
 from requests.exceptions import ConnectionError, Timeout
@@ -55,17 +55,31 @@ class LongPoll:
         self.ts = response["ts"]
         self.key = response["key"]
 
-    def _get_events(self) -> Dict[str, Any]:
+    def _get_events(self) -> Optional[Dict[str, Any]]:
         """Gets server events.
         """
-        response = self.session.get(
-            self.for_server % (self.server, self.key, self.ts),
-            timeout=30
-        ).json()
-        if "ts" not in response or "updates" not in response:
-            self._get_server()
-        else:
-            return response
+        try:
+            response = self.session.get(
+                self.for_server % (self.server, self.key, self.ts),
+                timeout=30
+            ).json()
+            if "ts" not in response or "updates" not in response:
+                self._get_server()
+            else:
+                return response
+        except ConnectionError:
+            self.logger.warning('connection error... trying restart listening in 5 seconds...')
+            sleep(5)
+            return None
+        except Timeout:
+            self.logger.warning('timeout error... trying restart listening in 10 seconds...')
+            sleep(10)
+            return None
+        except Exception as e:
+            self.logger.warning('Unknown exception... trying restart listening in 15 seconds...')
+            self.logger.error(e)
+            sleep(15)
+            return None
 
     def listen(
             self,
@@ -80,26 +94,8 @@ class LongPoll:
 
         # Start listening.
         while True:
-            try:
-                response = self._get_events()
-            except ConnectionError:
-                self.logger.warning('connection error... trying restart listening in 5 seconds...')
-                sleep(5)
-                continue
-            except Timeout:
-                self.logger.warning('timeout error... trying restart listening in 10 seconds...')
-                sleep(10)
-                continue
-            except TypeError:
-                self.logger.warning('type error... trying restart listening in 5 seconds...')
-                sleep(5)
-                self._get_server()
-                continue
-            except Exception as e:
-                self.logger.warning('Unknown exception... trying restart listening in 15 seconds...')
-                self.logger.error(e)
-                sleep(15)
-                self._get_server()
+            response = self._get_events()
+            if not response:
                 continue
             self.ts = response["ts"]
 

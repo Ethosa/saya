@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
+from typing import NoReturn, Dict, Any, Optional
 from asyncio import sleep, TimeoutError
 
 from aiohttp.client_exceptions import ClientConnectionError
@@ -38,9 +39,8 @@ class ALongPoll:
                 "https://%s?act=a_check&key=%s&ts=%s&wait=25&mode=202&version=3"
             )
 
-    async def _get_server(self):
-        """
-        Returns server, ts and key.
+    async def _get_server(self) -> NoReturn:
+        """Returns server, ts and key.
 
         Raises:
             ValueError -- Invalid authentication.
@@ -56,11 +56,10 @@ class ALongPoll:
         self.ts = response["ts"]
         self.key = response["key"]
 
-    async def _get_events(self):
+    async def _get_events(self) -> Optional[Dict[str, Any]]:
+        """Returns server response after calling.
         """
-        Returns server response after calling.
-        """
-        while True:
+        try:
             response = await self.session.get(
                 self.for_server % (self.server, self.key, self.ts)
             )
@@ -69,13 +68,25 @@ class ALongPoll:
                 await self._get_server()
             else:
                 return response
+        except ClientConnectionError:
+            self._log('WARNING', 'connection error... trying restart listening in 5 seconds...')
+            await sleep(5)
+            return None
+        except TimeoutError:
+            self._log('WARNING', 'timeout error... trying restart listening in 10 seconds...')
+            await sleep(10)
+            return None
+        except Exception as e:
+            self._log('WARNING', 'Unknown exception... trying restart listening in 15 seconds...')
+            self._log('ERROR', e)
+            await sleep(15)
+            return None
 
     async def listen(
             self,
             ev: bool = False
     ):
-        """
-        Starts listening.
+        """Starts listening.
 
         Keyword Argments:
             ev {bool} -- always return dict object.
@@ -90,26 +101,8 @@ class ALongPoll:
 
         # Start listening.
         while True:
-            try:
-                response = await self._get_events()
-            except ClientConnectionError:
-                self._log('WARNING', 'connection error... trying restart listening in 5 seconds...')
-                await sleep(5)
-                continue
-            except TimeoutError:
-                self._log('WARNING', 'timeout error... trying restart listening in 10 seconds...')
-                await sleep(10)
-                continue
-            except TypeError:
-                self._log('WARNING', 'type error... trying restart listening in 5 seconds...')
-                await sleep(5)
-                await self._get_server()
-                continue
-            except Exception as e:
-                self._log('WARNING', 'Unknown exception... trying restart listening in 15 seconds...')
-                self._log('ERROR', e)
-                await sleep(15)
-                await self._get_server()
+            response = await self._get_events()
+            if not response:
                 continue
             self.ts = response["ts"]
 
