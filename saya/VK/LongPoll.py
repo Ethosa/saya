@@ -3,7 +3,7 @@
 from typing import NoReturn, Dict, Any
 from time import sleep
 
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError, Timeout
 
 from .event import event
 
@@ -85,6 +85,10 @@ class LongPoll:
             except ConnectionError:
                 self.logger.warning('connection error... trying restart listening in 5 seconds...')
                 sleep(5)
+                continue
+            except Timeout:
+                self.logger.warning('timeout error... trying restart listening in 10 seconds...')
+                sleep(10)
                 continue
             self.ts = response["ts"]
 

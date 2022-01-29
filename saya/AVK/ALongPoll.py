@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
-from asyncio import sleep
+from asyncio import sleep, TimeoutError
 
 from aiohttp.client_exceptions import ClientConnectionError
 
@@ -95,6 +95,10 @@ class ALongPoll:
             except ClientConnectionError:
                 self._log('WARNING', 'connection error... trying restart listening in 5 seconds...')
                 await sleep(5)
+                continue
+            except TimeoutError:
+                self._log('WARNING', 'timeout error... trying restart listening in 10 seconds...')
+                await sleep(10)
                 continue
             self.ts = response["ts"]
 
