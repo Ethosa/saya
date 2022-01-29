@@ -97,6 +97,7 @@ class LongPoll:
                 continue
             except Exception as e:
                 self.logger.warning('Unknown exception... trying restart listening in 15 seconds...')
+                self.logger.error(e)
                 sleep(15)
                 self._get_server()
                 continue

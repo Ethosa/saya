@@ -101,12 +101,13 @@ class ALongPoll:
                 await sleep(10)
                 continue
             except TypeError:
-                self.logger.warning('type error... trying restart listening in 5 seconds...')
+                self._log('WARNING', 'type error... trying restart listening in 5 seconds...')
                 await sleep(5)
                 await self._get_server()
                 continue
             except Exception as e:
-                self.logger.warning('Unknown exception... trying restart listening in 15 seconds...')
+                self._log('WARNING', 'Unknown exception... trying restart listening in 15 seconds...')
+                self._log('ERROR', e)
                 await sleep(15)
                 await self._get_server()
                 continue
