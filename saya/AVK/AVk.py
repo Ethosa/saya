@@ -1,30 +1,37 @@
 # -*- coding: utf-8 -*-
 # author: Ethosa
+from typing import NoReturn, Optional, Dict, Any
 import asyncio
 from time import ctime as current_time
 
 from aiohttp import ClientSession
 
-from .ALongPoll import ALongPoll
-from .AUploader import AUploader
+from .alongpoll import ALongPoll
+from .auploader import AUploader
 from ..VK.vk_auth import VkAuthManager
 from ..VK.vks import VkScript
 
 
 class AVk:
-    def __init__(self, token="", group_id="",
-                 login="", password="", api="5.103",
-                 debug=False, loop=None):
+    def __init__(
+            self,
+            token: str = "",
+            group_id: str = "",
+            login: str = "",
+            password: str = "",
+            api: str = "5.103",
+            debug: bool = False,
+            loop: Optional[asyncio.EventLoop] = None
+    ) -> NoReturn:
         """auth in VK
 
-        Keyword Arguments:
-            token {str} -- access_token (default: {""})
-            group_id {str} -- group id if you want to log in through the group (default: {""})
-            login {str} -- login. used for authorization through the user (default: {""})
-            password {str} -- password. used for authorization through the user (default: {""})
-            api {str} -- api version (default: {"5.103"})
-            debug {bool} -- debug log (default: {False})
-            loop {asyncio event loop} (default: new asyncio event loop) -- event loop to use for requests
+        :param token: access_token
+        :param group_id: group id if you want to log in through the group
+        :param login: login. used for authorization through the user
+        :param password: password. used for authorization through the user
+        :param api: api version
+        :param debug: debug log
+        :param loop: event loop to use for requests
         """
         self.session = ClientSession(loop=loop or asyncio.get_event_loop())
 
@@ -46,24 +53,32 @@ class AVk:
         self.uploader = AUploader(self)
         self.vks = VkScript()  # for pyexecute method.
 
-    def _log(self, logtype, message):
-        """
-        Outputs log messages.
+    def _log(
+            self,
+            logtype: str,
+            message: str
+    ) -> NoReturn:
+        """Outputs log messages.
         """
         if self.debug:
             print("[%s] at %s -- %s" % (
                 logtype, current_time(), message)
             )
 
-    async def _wrapper(self, **kwargs):
-        """
-        Provides convenient usage VK API.
+    async def _wrapper(
+            self,
+            **kwargs
+    ) -> Dict[str, Any]:
+        """Provides convenient usage VK API.
         """
         return await self.call_method(self.method, kwargs)
 
-    async def call_method(self, method, data=None):
-        """
-        Calls to any method in VK API.
+    async def call_method(
+            self,
+            method,
+            data: Dict[str, Any] = None
+    ) -> Dict[str, Any]:
+        """Calls to any method in VK API.
 
         Arguments:
             method {str} -- method name
@@ -96,9 +111,11 @@ class AVk:
             self._log("DEBUG", 'Successfully called method "%s"' % method)
         return response
 
-    async def execute(self, code):
-        """
-        Calls an execute VK API method
+    async def execute(
+            self,
+            code: str
+    ) -> Dict[str, Any]:
+        """Calls an execute VK API method
 
         Arguments:
             code {str} -- VKScript code.
@@ -108,9 +125,11 @@ class AVk:
         """
         return await self.call_method("execute", {"code": code})
 
-    async def pyexecute(self, code):
-        """
-        Calls an execute VK API method
+    async def pyexecute(
+            self,
+            code
+    ) -> Dict[str, Any]:
+        """Calls an execute VK API method
 
         Arguments:
             code {str} -- Python code.
@@ -122,8 +141,7 @@ class AVk:
         return await self.execute(code)
 
     async def start_listen(self):
-        """
-        Starts receiving events from the server.
+        """Starts receiving events from the server.
         """
         async for event in self.longpoll.listen(True):
             if "type" in event:
@@ -137,8 +155,7 @@ class AVk:
                 self._log("WARNING", "Unknown event passed: %s" % event)
 
     def __getattr__(self, attr):
-        """
-        A convenient alternative for the call_method method.
+        """A convenient alternative for the call_method method.
 
         Arguments:
             attr {str} -- method name
