@@ -51,6 +51,7 @@ class ALongPoll:
         if "response" in response:
             response = response["response"]
         else:
+            self = ALongPoll(self.v)
             raise ValueError("Invalid authentication.")
         self.server = response["server"]
         self.ts = response["ts"]
